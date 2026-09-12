@@ -1,0 +1,45 @@
+==============================================================================
+KARACHI TRANSIT AI — QUICK COMMANDS & SETUP GUIDE
+==============================================================================
+
+1. RUN FRONTEND LOCALLY (Next.js):
+   cd frontend
+   npm run dev
+   --> Open http://localhost:3000 in your browser
+
+2. RUN PYTHON BACKEND LOCALLY (FastAPI):
+   cd backend
+   pip install -r requirements.txt
+   uvicorn main:app --reload --port 8000
+   --> Runs on http://127.0.0.1:8000 (Docs at http://127.0.0.1:8000/docs)
+
+3. RENDER DEPLOYMENT (Python Backend):
+   - Push code to GitHub
+   - Go to https://dashboard.render.com -> Blueprints -> New Blueprint Instance
+   - Connect this repository
+   - Render will automatically read `render.yaml` and deploy `karachi-transit-backend`!
+
+4. SUPABASE DATABASE SETUP (In Supabase Dashboard):
+   Step A: Open your project at https://supabase.com/dashboard
+   Step B: Navigate to "SQL Editor" on the left sidebar
+   Step C: Run the contents of:
+           - supabase/migrations/01_schema.sql  (creates tables & RLS policies)
+           - supabase/seed.sql                 (seeds Route 1 & Sheraz Coach stops + aliases)
+
+5. VERCEL DEPLOYMENT (Frontend):
+   - Push code to GitHub
+   - Go to https://vercel.com/new -> Import your repository
+   - Set "Root Directory" to: frontend
+   - Add Environment Variables (from your .env):
+       NEXT_PUBLIC_SUPABASE_URL = <your_supabase_url>
+       NEXT_PUBLIC_SUPABASE_ANON_KEY = <your_anon_key>
+       NEXT_PUBLIC_BACKEND_URL = <your_render_service_url> (optional)
+   - Click Deploy!
+
+==============================================================================
+NOTE ON SUPABASE_URL:
+In your `.env` and `frontend/.env.local`, make sure `NEXT_PUBLIC_SUPABASE_URL` 
+is set to your actual Supabase Project URL (e.g. https://xxxx.supabase.co), 
+found in your Supabase Dashboard under Project Settings -> API.
+==============================================================================
+

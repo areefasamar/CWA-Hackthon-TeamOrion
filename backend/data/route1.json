@@ -1,0 +1,35 @@
+{
+  "route_id": "PBS-01",
+  "route_name": "Peoples Bus Service - Route 1 (EV-1)",
+  "operator": "Peoples Bus Service",
+  "fleet_type": "Electric AC",
+  "fare_type": "FLAT",
+  "flat_fare_pkr": 50,
+  "corridor": "Sharea Faisal Corridor",
+  "canonical_stops": [
+    {"sequence": 1, "stop_id": "ST-01", "official_name": "Model Colony", "coordinates": {"lat": 24.8992, "lng": 67.1865}, "is_terminal": true, "sub_landmarks": ["Model Colony Terminal", "Model Mor"]},
+    {"sequence": 2, "stop_id": "ST-02", "official_name": "Malir Halt", "coordinates": {"lat": 24.8920, "lng": 67.1684}, "is_terminal": false, "sub_landmarks": ["Malir Bridge", "Halt Stop"]},
+    {"sequence": 3, "stop_id": "ST-03", "official_name": "Star Gate", "coordinates": {"lat": 24.8872, "lng": 67.1512}, "is_terminal": false, "sub_landmarks": ["Airport", "Jinnah International", "Airport Road"]},
+    {"sequence": 4, "stop_id": "ST-04", "official_name": "Drigh Road Station", "coordinates": {"lat": 24.8789, "lng": 67.1265}, "is_terminal": false, "sub_landmarks": ["Drig Road", "Lal Kothi", "Railway Station"]},
+    {"sequence": 5, "stop_id": "ST-05", "official_name": "Karsaz", "coordinates": {"lat": 24.8722, "lng": 67.0988}, "is_terminal": false, "sub_landmarks": ["Karsaz Chowrangi", "National Stadium Turn"]},
+    {"sequence": 6, "stop_id": "ST-06", "official_name": "Baloch Colony", "coordinates": {"lat": 24.8654, "lng": 67.0782}, "is_terminal": false, "sub_landmarks": ["Baloch Colony Flyover", "Expressway"]},
+    {"sequence": 7, "stop_id": "ST-07", "official_name": "Nursery", "coordinates": {"lat": 24.8580, "lng": 67.0620}, "is_terminal": false, "sub_landmarks": ["PECHS", "Nursery Furniture Market"]},
+    {"sequence": 8, "stop_id": "ST-08", "official_name": "FTC", "coordinates": {"lat": 24.8540, "lng": 67.0505}, "is_terminal": false, "sub_landmarks": ["FTC Building", "Finance and Trade Centre"]},
+    {"sequence": 9, "stop_id": "ST-09", "official_name": "Metropole Hotel", "coordinates": {"lat": 24.8505, "lng": 67.0315}, "is_terminal": false, "sub_landmarks": ["Metropol", "Avari", "Saddar", "Club Road"]},
+    {"sequence": 10, "stop_id": "ST-10", "official_name": "Arts Council", "coordinates": {"lat": 24.8548, "lng": 67.0180}, "is_terminal": false, "sub_landmarks": ["Sindh Assembly", "YMCA"]},
+    {"sequence": 11, "stop_id": "ST-11", "official_name": "Tower", "coordinates": {"lat": 24.8530, "lng": 66.9995}, "is_terminal": true, "sub_landmarks": ["Merewether Tower", "Kharadar", "Boulton Market"]}
+  ],
+  "karachi_alias_dictionary": {
+    "airport": "Star Gate",
+    "jinnah": "Star Gate",
+    "stargate": "Star Gate",
+    "drig road": "Drigh Road Station",
+    "lal kothi": "Drigh Road Station",
+    "stadium": "Karsaz",
+    "pechs": "Nursery",
+    "avari": "Metropole Hotel",
+    "saddar": "Metropole Hotel",
+    "sindh assembly": "Arts Council",
+    "kharadar": "Tower"
+  }
+}
