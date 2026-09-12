@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import React from "react";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta-sans" });
 
 export const metadata: Metadata = {
   title: "Karachi Transit AI — Phase 1 MVP",
@@ -13,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
