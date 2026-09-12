@@ -10,6 +10,7 @@ KARACHI TRANSIT AI — QUICK COMMANDS & SETUP GUIDE
 2. RUN PYTHON BACKEND LOCALLY (FastAPI):
    cd backend
    pip install -r requirements.txt
+   Copy backend/.env.example to backend/.env and set XAI_API_KEY
    uvicorn main:app --reload --port 8000
    --> Runs on http://127.0.0.1:8000 (Docs at http://127.0.0.1:8000/docs)
 

@@ -21,22 +21,44 @@ export interface JourneyCardData {
   steps: RouteStep[];
   commuter_tips: string[];
   summary_text: string;
+  // Phase 2 (live telemetry / disruption) fields — optional so Phase 1
+  // responses without them remain valid.
+  estimated_wait_time_mins?: number;
+  has_disruption?: boolean;
+  disruption_warning?: string;
 }
 
 export interface ReasoningTrace {
   detected_language: string;
   extracted_intent: {
-    origin: string;
-    destination: string;
+    origin: string | null;
+    destination: string | null;
     query_type?: string;
-  };
-  matched_route: string;
-  fare_evaluated: number;
+    preference?: string;
+    fare_limit?: number | null;
+  } | null;
+  matched_route: string | null;
+  fare_evaluated: number | null;
+}
+
+export interface TransitIntent {
+  origin: string | null;
+  destination: string | null;
+  fare_limit: number | null;
+  arrival_deadline: string | null;
+  departure_time: string | null;
+  preference: string;
+  language: string;
 }
 
 export interface ApiResponse {
   reasoning_trace?: ReasoningTrace;
   journey_card: JourneyCardData;
+  intent?: TransitIntent | null;
+  result?: Record<string, unknown>;
+  response?: string;
+  transcript?: string;
+  error?: { code: string; message: string };
 }
 
 export interface ChatMessage {

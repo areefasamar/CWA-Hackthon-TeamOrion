@@ -62,7 +62,7 @@ const ALIAS_MAP: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { message, session_id } = await req.json();
+    const { message, session_id, lat, lng } = await req.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -78,8 +78,8 @@ export async function POST(req: Request) {
         const pyRes = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message, session_id }),
-          signal: AbortSignal.timeout(4000)
+          body: JSON.stringify({ message, session_id, lat, lng }),
+          signal: AbortSignal.timeout(45000)
         });
         if (pyRes.ok) {
           const pyData = await pyRes.json();
