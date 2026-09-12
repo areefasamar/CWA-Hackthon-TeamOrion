@@ -33,7 +33,7 @@ KARACHI TRANSIT AI — QUICK COMMANDS & SETUP GUIDE
    - Add Environment Variables (from your .env):
        NEXT_PUBLIC_SUPABASE_URL = <your_supabase_url>
        NEXT_PUBLIC_SUPABASE_ANON_KEY = <your_anon_key>
-       NEXT_PUBLIC_BACKEND_URL = <your_render_service_url> (optional)
+       NEXT_PUBLIC_BACKEND_URL = https://karachi-transit-backend-lsun.onrender.com
    - Click Deploy!
 
 ==============================================================================
