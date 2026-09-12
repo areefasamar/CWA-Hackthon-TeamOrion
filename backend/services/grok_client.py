@@ -7,9 +7,10 @@ from pydantic import BaseModel, ValidationError
 
 XAI_BASE_URL = "https://api.x.ai/v1"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-DEFAULT_MODEL = "grok-4-fast"
-DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
-DEFAULT_GROQ_STT_MODEL = "whisper-large-v3"
+# Model names are hardcoded (do not come from env):
+MODEL_XAI = "grok-4-fast"
+MODEL_GROQ = "openai/gpt-oss-120b"
+MODEL_GROQ_STT = "whisper-large-v3"
 
 ALLOWED_PREFERENCES = {
     "lowest_fare",
@@ -107,9 +108,10 @@ def _client() -> OpenAI:
 
 
 def _model_name() -> str:
+    # Hardcoded model selection per provider.
     if provider_name() == "groq":
-        return os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
-    return os.getenv("XAI_MODEL", DEFAULT_MODEL)
+        return MODEL_GROQ
+    return MODEL_XAI
 
 
 def intent_to_dict(intent: TransitIntent) -> Dict[str, Any]:
@@ -325,7 +327,7 @@ def transcribe_audio(file_bytes: bytes, filename: str = "audio.webm") -> str:
             client = OpenAI(
                 api_key=key, base_url=GROQ_BASE_URL, timeout=45.0
             )
-            model = os.getenv("GROQ_STT_MODEL", DEFAULT_GROQ_STT_MODEL)
+            model = MODEL_GROQ_STT
             transcript_obj = client.audio.transcriptions.create(
                 model=model,
                 file=(filename, file_bytes),
