@@ -28,9 +28,9 @@ export async function POST(req: Request) {
 
     const data = await pyRes.json();
     return NextResponse.json(data, { status: pyRes.status });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Voice proxy failed" },
+      { error: error instanceof Error ? error.message : "Voice proxy failed" },
       { status: 500 }
     );
   }

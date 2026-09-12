@@ -55,9 +55,13 @@ export async function GET() {
       routes_count: routes ? routes.length : 0,
       routes: routes
     });
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
-      { connected: false, source: "server_error", error: err.message },
+      {
+        connected: false,
+        source: "server_error",
+        error: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

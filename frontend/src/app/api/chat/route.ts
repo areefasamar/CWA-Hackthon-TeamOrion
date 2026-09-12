@@ -85,7 +85,7 @@ export async function POST(req: Request) {
           const pyData = await pyRes.json();
           return NextResponse.json(pyData);
         }
-      } catch (pyErr) {
+      } catch {
         // Python backend not currently responding, continue to fallback
       }
     }
@@ -225,8 +225,9 @@ export async function POST(req: Request) {
     };
 
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

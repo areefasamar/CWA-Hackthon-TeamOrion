@@ -51,6 +51,17 @@ const QUICK_PROMPTS = [
   { label: "Sheraz Coach Safoora", query: "Sheraz Coach Safoora Chowrangi se Tower jayegi?" }
 ];
 
+// --- Event-time helpers (module scope) --------------------------------------
+// Date.now()/new Date() are impure; keeping them at module scope keeps the
+// component body render-pure (react-hooks/purity).
+function nextMessageId(prefix: string): string {
+  return `${prefix}-${Date.now()}`;
+}
+
+function nowTimestamp(): string {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function ChatContainer() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
@@ -91,10 +102,10 @@ export default function ChatContainer() {
     if (!query || loading) return;
 
     const userMsg: ChatMessage = {
-      id: `usr-${Date.now()}`,
+      id: nextMessageId("usr"),
       sender: "user",
       text: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      timestamp: nowTimestamp()
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -120,21 +131,21 @@ export default function ChatContainer() {
       const data: ApiResponse = await res.json();
 
       const botMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+        id: nextMessageId("bot"),
         sender: "bot",
         text: data.response || data.journey_card?.summary_text || "Aapka safar confirm ho gaya hai.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: nowTimestamp(),
         journeyCard: data.journey_card
       };
 
       setMessages((prev) => [...prev, botMsg]);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to send message:", err);
       const errorMsg: ChatMessage = {
-        id: `err-${Date.now()}`,
+        id: nextMessageId("err"),
         sender: "bot",
         text: "Maazrat, rabta qaaim nahi ho saka. Barah-e-karam dobara koshish karein.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        timestamp: nowTimestamp()
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -175,10 +186,10 @@ export default function ChatContainer() {
       setMessages((prev) => [
         ...prev,
         {
-          id: `sys-${Date.now()}`,
+          id: nextMessageId("sys"),
           sender: "bot",
           text: "Voice input is browser mein support nahi hai — Chrome ya Edge try karein, ya apna sawaal type karein.",
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          timestamp: nowTimestamp()
         }
       ]);
       return;
@@ -243,16 +254,16 @@ export default function ChatContainer() {
             return;
           }
           const userMsg: ChatMessage = {
-            id: `usr-${Date.now()}`,
+            id: nextMessageId("usr"),
             sender: "user",
             text: spoken,
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            timestamp: nowTimestamp()
           };
           const botMsg: ChatMessage = {
-            id: `bot-${Date.now()}`,
+            id: nextMessageId("bot"),
             sender: "bot",
             text: data.response || data.journey_card?.summary_text || "Aapka safar confirm ho gaya hai.",
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            timestamp: nowTimestamp(),
             journeyCard: data.journey_card
           };
           setMessages((prev) => [...prev, userMsg, botMsg]);
