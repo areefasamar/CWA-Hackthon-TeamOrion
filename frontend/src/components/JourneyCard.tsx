@@ -2,107 +2,129 @@
 
 import React from "react";
 import { JourneyCardData, RouteStep } from "@/types/transit";
-import { Bus, MapPin, ArrowRight, CheckCircle2, AlertCircle, Info, DollarSign, Sparkles } from "lucide-react";
+import {
+  Bus,
+  CheckCircle2,
+  AlertTriangle,
+  Info,
+  Sparkles,
+  Clock,
+  XCircle
+} from "lucide-react";
 
 interface JourneyCardProps {
   card: JourneyCardData;
 }
 
 export default function JourneyCard({ card }: JourneyCardProps) {
-  const isConfirmed = card.status === "CONFIRMED";
+  const isError = card.status === "NO_ROUTE_FOUND";
+  const isWarning = card.status === "WARNING_REROUTED" || card.has_disruption === true;
+  const hasSteps = Array.isArray(card.steps) && card.steps.length > 0;
 
   return (
-    <div className="journey-card-wrapper">
-      {/* Header Banner */}
-      <div className="card-header">
-        <div className="header-left">
-          <div className="badge-route-type">
-            <Bus size={16} className="route-icon" />
-            <span>{card.fleet_type}</span>
-          </div>
-          <h3 className="route-title">{card.primary_route_name}</h3>
-          <p className="operator-sub">Operator: {card.operator}</p>
+    <article className="journey-card">
+      {/* Header — route identity + fare */}
+      <div className="jc-header">
+        <div className="jc-route-identity">
+          <span className="jc-fleet-badge">
+            <Bus size={12} />
+            {card.fleet_type}
+          </span>
+          <h3 className="jc-route-name">{card.primary_route_name}</h3>
+          <p className="jc-operator">Operator · {card.operator}</p>
         </div>
 
-        <div className="header-right">
-          <div className="fare-badge">
-            <span className="fare-label">Fare</span>
-            <span className="fare-value">{card.estimated_fare}</span>
-          </div>
+        <div className="jc-fare">
+          <span className="jc-fare-label">Fare</span>
+          <span className="jc-fare-value">{card.estimated_fare}</span>
         </div>
       </div>
 
-      {/* Origin -> Destination Corridor Bar */}
-      <div className="corridor-bar">
-        <div className="corridor-point">
-          <div className="point-dot origin-dot"></div>
-          <div>
-            <span className="corridor-label">Boarding</span>
-            <div className="corridor-name">{card.origin}</div>
-          </div>
+      {/* Disruption / delay warning */}
+      {isWarning && (
+        <div className="jc-alert jc-alert-warning" role="alert">
+          <AlertTriangle size={15} />
+          <p>
+            {card.disruption_warning ||
+              "Is corridor par aaj halki takheer mutawaqqe hai — thora extra waqt sath rakhein."}
+          </p>
+        </div>
+      )}
+
+      {/* No-route error */}
+      {isError && (
+        <div className="jc-alert jc-alert-error" role="alert">
+          <XCircle size={15} />
+          <p>
+            Is location ke liye koi direct service nahi mili. Barah-e-karam dobara koshish karein
+            ya koi nazdeeqi stop poochein.
+          </p>
+        </div>
+      )}
+
+      {/* Live ETA pill (when backend supplies telemetry) */}
+      {typeof card.estimated_wait_time_mins === "number" && !isError && (
+        <span className="jc-wait-badge">
+          <Clock size={13} />
+          Bus arrives in ~{card.estimated_wait_time_mins} mins
+        </span>
+      )}
+
+      {/* Origin → Destination corridor */}
+      <div className="jc-corridor">
+        <div className="jc-endpoint">
+          <span className="jc-endpoint-label">Boarding</span>
+          <span className="jc-endpoint-name">{card.origin}</span>
         </div>
 
-        <div className="corridor-arrow">
-          <div className="corridor-line"></div>
-          <ArrowRight size={18} className="arrow-icon" />
-        </div>
+        <div className="jc-corridor-line" aria-hidden="true" />
 
-        <div className="corridor-point destination-point">
-          <div className="point-dot dest-dot"></div>
-          <div>
-            <span className="corridor-label">Destination</span>
-            <div className="corridor-name">{card.destination}</div>
-          </div>
+        <div className="jc-endpoint">
+          <span className="jc-endpoint-label">Destination</span>
+          <span className="jc-endpoint-name">{card.destination}</span>
         </div>
       </div>
 
-      {/* Step by Step Timeline */}
-      <div className="steps-section">
-        <h4 className="section-heading">Journey Steps</h4>
-        <div className="steps-timeline">
-          {card.steps.map((step: RouteStep, idx: number) => {
-            const isBoard = step.action === "BOARD";
-            const isAlight = step.action === "ALIGHT";
-
-            return (
-              <div key={idx} className="timeline-step">
-                <div className="step-marker-container">
-                  <div className={`step-marker ${isBoard ? "marker-board" : isAlight ? "marker-alight" : "marker-transit"}`}>
-                    {isBoard ? (
-                      <span className="marker-number">1</span>
-                    ) : isAlight ? (
-                      <CheckCircle2 size={16} />
-                    ) : (
-                      <span className="marker-dot"></span>
-                    )}
-                  </div>
-                  {idx < card.steps.length - 1 && <div className="step-connector"></div>}
+      {/* Step-by-step timeline */}
+      {hasSteps && (
+        <div className="jc-steps">
+          <h4 className="jc-section-title">Journey Steps</h4>
+          <ol className="jc-steps-list">
+            {card.steps.map((step: RouteStep, idx: number) => (
+              <li key={idx} className={`jc-step jc-step--${step.action}`}>
+                <div className="jc-step-node">
+                  {step.action === "BOARD" ? (
+                    step.step_number
+                  ) : step.action === "ALIGHT" ? (
+                    <CheckCircle2 size={14} />
+                  ) : null}
                 </div>
+                {idx < card.steps.length - 1 && (
+                  <span className="jc-step-connector" aria-hidden="true" />
+                )}
 
-                <div className="step-body">
-                  <div className="step-header">
-                    <span className="step-action-tag">{step.action}</span>
-                    <span className="step-stop-name">{step.stop_name}</span>
-                  </div>
-                  <p className="step-instruction">{step.instructions}</p>
+                <div className="jc-step-head">
+                  <span className="jc-action-tag">{step.action}</span>
+                  <span className="jc-stop-name">{step.stop_name}</span>
                 </div>
-              </div>
-            );
-          })}
+                <p className="jc-step-instruction">{step.instructions}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-      </div>
+      )}
 
-      {/* Commuter Tips */}
+      {/* Commuter tips */}
       {card.commuter_tips && card.commuter_tips.length > 0 && (
-        <div className="tips-section">
-          <div className="tips-title">
-            <Info size={15} className="tips-icon" />
+        <div className="jc-tips">
+          <div className="jc-tips-title">
+            <Info size={14} />
             <span>Local Commuter Guidance</span>
           </div>
-          <ul className="tips-list">
+          <ul className="jc-tips-list">
             {card.commuter_tips.map((tip, idx) => (
-              <li key={idx} className="tip-item">
-                <span className="tip-bullet">•</span>
+              <li key={idx} className="jc-tip">
+                <span className="jc-tip-bullet">•</span>
                 <span>{tip}</span>
               </li>
             ))}
@@ -110,13 +132,13 @@ export default function JourneyCard({ card }: JourneyCardProps) {
         </div>
       )}
 
-      {/* Summary Speech Bubble */}
+      {/* Summary banner */}
       {card.summary_text && (
-        <div className="summary-banner">
-          <Sparkles size={16} className="summary-sparkle" />
-          <p className="summary-text">{card.summary_text}</p>
+        <div className="jc-summary">
+          <Sparkles size={15} className="jc-summary-spark" />
+          <p>{card.summary_text}</p>
         </div>
       )}
-    </div>
+    </article>
   );
 }

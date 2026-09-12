@@ -1,14 +1,32 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta-sans" });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Karachi Transit AI — Phase 1 MVP",
-  description: "Smart Route & Fare Guide for Karachi Transit (Peoples Bus Service Route 1 & Sheraz Coach)",
+  title: "Safar — Karachi Transit AI",
+  description:
+    "AI-assisted urban transit companion for Karachi — live route guidance, fares and journey planning for Peoples Bus Service Route 1 & Sheraz Coach.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4F46E5",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -17,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="en" className={`${jakarta.variable} ${inter.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

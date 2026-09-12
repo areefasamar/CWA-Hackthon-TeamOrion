@@ -1,28 +1,38 @@
 import os
 import sys
+from datetime import datetime
 from typing import Optional
 
 # Ensure backend directory is on Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 import httpx
 
-from services.transit_engine import process_transit_query
+from services.transit_engine import nearest_stop_from_gps, process_transit_query
 from services.telemetry import (
-    get_telemetry, 
-    get_disruptions, 
-    advance_bus_position, 
+    get_telemetry,
+    get_disruptions,
+    advance_bus_position,
     toggle_disruption
+)
+from services.grok_client import (
+    GrokError,
+    extract_transit_intent,
+    generate_user_response,
+    grok_configured,
+    provider_name,
+    transcribe_audio,
 )
 
 
 # Load environment variables from backend/.env or root .env
 load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 if not os.getenv("SUPABASE_URL"):
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
@@ -45,9 +55,96 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = "web-session"
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 class DisruptionToggleRequest(BaseModel):
     active: bool
+
+
+def _public_error(code: str, message: str, status_code: int = 200) -> dict:
+    return {
+        "error": {"code": code, "message": message},
+        "intent": None,
+        "result": {"available": False, "reason": code},
+        "response": message,
+        "journey_card": {
+            "status": "NO_ROUTE_FOUND",
+            "primary_route_name": "",
+            "operator": "",
+            "fleet_type": "",
+            "estimated_fare": "",
+            "origin": "",
+            "destination": "",
+            "steps": [],
+            "commuter_tips": [],
+            "summary_text": message,
+        },
+        "reasoning_trace": {"detected_language": None, "extracted_intent": None},
+    }
+
+
+def run_chat_pipeline(message: str, lat: Optional[float] = None, lng: Optional[float] = None) -> dict:
+    live_telemetry = get_telemetry()
+    disruptions = get_disruptions()
+    current_time = datetime.now().strftime("%H:%M")
+    current_stop = None
+    if lat is not None and lng is not None:
+        current_stop = nearest_stop_from_gps(lat, lng)
+
+    intent = None
+    grok_status = "ok"
+
+    if grok_configured():
+        try:
+            intent = extract_transit_intent(
+                user_message=message,
+                current_location=current_stop,
+                current_time=current_time,
+            )
+        except GrokError as err:
+            grok_status = err.code
+            intent = None
+    else:
+        grok_status = "missing_api_key"
+
+    skip_defaults = intent is not None
+    engine = process_transit_query(
+        message=message,
+        live_telemetry=live_telemetry,
+        disruptions=disruptions,
+        intent=intent,
+        current_stop=current_stop,
+        skip_default_stops=skip_defaults,
+    )
+
+    backend_result = engine.get("result") or {}
+    journey_card = engine.get("journey_card") or {}
+    user_facing = journey_card.get("summary_text") or ""
+
+    if intent and grok_configured():
+        try:
+            user_facing = generate_user_response(message, intent, backend_result)
+            journey_card["summary_text"] = user_facing
+        except GrokError as err:
+            grok_status = err.code
+
+    return {
+        "intent": intent,
+        "result": backend_result,
+        "response": user_facing,
+        "journey_card": journey_card,
+        "reasoning_trace": engine.get("reasoning_trace"),
+        "context": {
+            "current_location": current_stop,
+            "current_time": current_time,
+        },
+        "ai": {
+            "provider": provider_name(),
+            "status": grok_status,
+        },
+    }
+
 
 @app.get("/")
 def root():
@@ -65,15 +162,38 @@ def health_check():
 def chat_endpoint(req: ChatRequest):
     if not req.message or not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
+    return run_chat_pipeline(req.message.strip(), req.lat, req.lng)
 
-    live_telemetry = get_telemetry()
-    disruptions = get_disruptions()
+@app.post("/api/voice")
+async def voice_endpoint(
+    audio: UploadFile = File(...),
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+):
+    if not grok_configured():
+        payload = _public_error(
+            "missing_api_key",
+            "Voice input needs XAI_API_KEY on the server. You can still type your question.",
+        )
+        payload["transcript"] = None
+        return payload
 
-    result = process_transit_query(
-        message=req.message,
-        live_telemetry=live_telemetry,
-        disruptions=disruptions
-    )
+    raw = await audio.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Audio file cannot be empty")
+
+    try:
+        transcript = transcribe_audio(raw, audio.filename or "audio.webm")
+    except GrokError:
+        payload = _public_error(
+            "grok_api_failure",
+            "Voice could not be transcribed right now. Please type your question.",
+        )
+        payload["transcript"] = None
+        return payload
+
+    result = run_chat_pipeline(transcript, lat, lng)
+    result["transcript"] = transcript
     return result
 
 @app.get("/api/telemetry")

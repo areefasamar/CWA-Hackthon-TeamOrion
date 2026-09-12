@@ -1,7 +1,11 @@
 import os
 import json
+import math
 import re
+from datetime import datetime
 from typing import Dict, Any, Tuple, Optional, List
+
+from services.telemetry import ROUTE_1_STOPS_GEO
 
 # Base Route 1 Aliases
 KARACHI_ALIASES: Dict[str, str] = {
@@ -32,7 +36,14 @@ KARACHI_ALIASES: Dict[str, str] = {
     "merewether": "Tower",
     "model colony": "Model Colony",
     "malir halt": "Malir Halt",
+    "johar": "Safoora Chowrangi",
+    "jauhar": "Safoora Chowrangi",
+    "gulistan e johar": "Safoora Chowrangi",
+    "gulistan-e-johar": "Safoora Chowrangi",
+    "gulistan-e-jauhar": "Safoora Chowrangi",
 }
+
+PBS_STOP_NAMES = [s["name"] for s in ROUTE_1_STOPS_GEO]
 
 # Load Sheraz Coach Dataset
 SHERAZ_DATA: Dict[str, Any] = {}
@@ -88,6 +99,65 @@ def detect_language(text: str) -> str:
         return "roman_urdu"
     return "english"
 
+def resolve_named_place(name: Optional[str]) -> Optional[str]:
+    """Map a free-text place onto a known stop via aliases. Does not invent places."""
+    if not name or not str(name).strip():
+        return None
+    raw = str(name).strip()
+    normalized = raw.lower()
+    if normalized in KARACHI_ALIASES:
+        return KARACHI_ALIASES[normalized]
+    sorted_aliases = sorted(KARACHI_ALIASES.items(), key=lambda x: len(x[0]), reverse=True)
+    for alias, canonical in sorted_aliases:
+        if alias and alias in normalized:
+            return canonical
+    for stop in SHERAZ_STOP_NAMES + PBS_STOP_NAMES:
+        if stop.lower() == normalized:
+            return stop
+    return raw
+
+
+def nearest_stop_from_gps(lat: float, lng: float) -> Optional[str]:
+    """Deterministic nearest known stop from GPS coordinates."""
+    candidates: List[Tuple[str, float, float]] = [
+        (s["name"], s["lat"], s["lng"]) for s in ROUTE_1_STOPS_GEO
+    ]
+    for stop in SHERAZ_STOPS:
+        coords = stop.get("coordinates") or {}
+        if "lat" in coords and "lng" in coords:
+            candidates.append((stop["official_name"], coords["lat"], coords["lng"]))
+
+    if not candidates:
+        return None
+
+    best_name = None
+    best_dist = None
+    for name, slat, slng in candidates:
+        dlat = math.radians(slat - lat)
+        dlng = math.radians(slng - lng)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat)) * math.cos(math.radians(slat)) * math.sin(dlng / 2) ** 2
+        )
+        dist = 6371 * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        if best_dist is None or dist < best_dist:
+            best_dist = dist
+            best_name = name
+    return best_name
+
+
+def _hhmm_to_minutes(value: Optional[str]) -> Optional[int]:
+    if not value:
+        return None
+    match = re.match(r"^(\d{1,2}):(\d{2})$", str(value).strip())
+    if not match:
+        return None
+    hours, mins = int(match.group(1)), int(match.group(2))
+    if hours > 23 or mins > 59:
+        return None
+    return hours * 60 + mins
+
+
 def extract_origin_destination(text: str) -> Tuple[Optional[str], Optional[str]]:
     """Extracts origin and destination from user message using alias lookup."""
     normalized = text.lower()
@@ -133,36 +203,136 @@ def calculate_sheraz_fare(origin: str, destination: str) -> Tuple[int, str]:
 
     return fare, f"Rs. {fare}"
 
+def _empty_journey(
+    origin: Optional[str],
+    destination: Optional[str],
+    lang: str,
+    reason: str,
+) -> Dict[str, Any]:
+    is_roman = lang in ["roman_urdu", "urdu", "urdu_script", "mixed"]
+    if reason == "missing_origin_or_destination":
+        summary = (
+            "Origin ya destination clear nahi hai. Barah-e-karam dono jagahain bataein."
+            if is_roman
+            else "Origin or destination is missing. Please name both places."
+        )
+    else:
+        summary = (
+            "Is request ke liye route data available nahi hai."
+            if is_roman
+            else "No matching route data is available for this request."
+        )
+    journey_card = {
+        "status": "NO_ROUTE_FOUND",
+        "primary_route_name": "",
+        "operator": "",
+        "fleet_type": "",
+        "estimated_fare": "",
+        "origin": origin or "",
+        "destination": destination or "",
+        "estimated_wait_time_mins": None,
+        "has_disruption": False,
+        "disruption_warning": None,
+        "steps": [],
+        "commuter_tips": [],
+        "summary_text": summary,
+    }
+    return {
+        "reasoning_trace": {
+            "detected_language": lang,
+            "extracted_intent": {
+                "origin": origin,
+                "destination": destination,
+                "query_type": "route_and_fare",
+            },
+            "matched_route": None,
+            "fare_evaluated": None,
+            "unavailable_reason": reason,
+        },
+        "journey_card": journey_card,
+        "result": {
+            "available": False,
+            "reason": reason,
+            "origin": origin,
+            "destination": destination,
+            "route": None,
+            "fare": None,
+            "wait_minutes": None,
+            "disruption": {"active": False},
+        },
+    }
+
+
 def process_transit_query(
-    message: str, 
+    message: str,
     live_telemetry: Optional[Dict[str, Any]] = None,
-    disruptions: Optional[list] = None
+    disruptions: Optional[list] = None,
+    intent: Optional[Dict[str, Any]] = None,
+    current_stop: Optional[str] = None,
+    skip_default_stops: bool = False,
 ) -> Dict[str, Any]:
     """
     Transit reasoning pipeline generating the verified Phase 1 & 2 JSON contract.
+    Optional structured intent (from Grok) overrides keyword extraction.
     """
     lang = detect_language(message)
     origin, destination = extract_origin_destination(message)
+    preference = "none"
+    fare_limit = None
+    arrival_deadline = None
+
+    if intent:
+        lang = intent.get("language") or lang
+        preference = intent.get("preference") or "none"
+        fare_limit = intent.get("fare_limit")
+        arrival_deadline = intent.get("arrival_deadline")
+        intent_origin = resolve_named_place(intent.get("origin"))
+        intent_dest = resolve_named_place(intent.get("destination"))
+        if intent_origin:
+            origin = intent_origin
+        if intent_dest:
+            destination = intent_dest
+
+    if not origin and current_stop:
+        origin = current_stop
 
     normalized = message.lower()
-    
+
+    if skip_default_stops and (not origin or not destination):
+        return _empty_journey(origin, destination, lang, "missing_origin_or_destination")
+
     # Determine if query targets Sheraz Coach
     is_sheraz = False
     if "sheraz" in normalized or "shiraz" in normalized or "cp6" in normalized or "cp 6" in normalized or "hawksbay" in normalized:
         is_sheraz = True
     elif origin in SHERAZ_STOP_NAMES or destination in SHERAZ_STOP_NAMES:
-        # If stop belongs specifically to Sheraz Coach (e.g. Safoora, Dow, KU, NED, Safari, Hassan Square)
         pbs_specific = ["model colony", "malir halt", "star gate", "karsaz", "baloch colony", "nursery", "ftc", "metropole hotel", "arts council"]
         if not any(pbs in normalized for pbs in pbs_specific):
             is_sheraz = True
+
+    pbs_possible = origin in PBS_STOP_NAMES or destination in PBS_STOP_NAMES
+    sheraz_possible = origin in SHERAZ_STOP_NAMES or destination in SHERAZ_STOP_NAMES
+
+    if preference in ("lowest_fare", "fastest", "most_comfortable", "least_walking", "balanced") and pbs_possible and sheraz_possible:
+        pbs_fare = 50
+        sheraz_fare, _ = calculate_sheraz_fare(origin or "Safoora Chowrangi", destination or "Tower")
+        if preference == "lowest_fare":
+            is_sheraz = sheraz_fare < pbs_fare
+        elif preference in ("fastest", "most_comfortable"):
+            is_sheraz = False
+        elif preference == "least_walking":
+            is_sheraz = sheraz_possible and not pbs_possible or is_sheraz
 
     if is_sheraz:
         route_id = "SHERAZ-01"
         route_name = "Sheraz Coach"
         operator = "Sheraz Transport Co."
         fleet_type = "Local Mini Bus / Non-AC"
-        origin = origin or "Safoora Chowrangi"
-        destination = destination or "Tower"
+        if not skip_default_stops:
+            origin = origin or "Safoora Chowrangi"
+            destination = destination or "Tower"
+        if not origin or not destination:
+            return _empty_journey(origin, destination, lang, "missing_origin_or_destination")
         fare_pkr, fare_str = calculate_sheraz_fare(origin, destination)
         corridor = "University Road Corridor"
     else:
@@ -172,11 +342,14 @@ def process_transit_query(
         fleet_type = "Electric AC"
         fare_pkr = 50
         fare_str = "Rs. 50"
-        origin = origin or "Model Colony"
-        destination = destination or ("Model Colony" if origin == "Tower" else "Tower")
+        if not skip_default_stops:
+            origin = origin or "Model Colony"
+            destination = destination or ("Model Colony" if origin == "Tower" else "Tower")
+        if not origin or not destination:
+            return _empty_journey(origin, destination, lang, "missing_origin_or_destination")
         corridor = "Sharea Faisal Corridor"
 
-    is_roman = lang in ["roman_urdu", "urdu_script"]
+    is_roman = lang in ["roman_urdu", "urdu", "urdu_script", "mixed"]
 
     # Telemetry calculation
     eta_mins = 6
@@ -248,6 +421,33 @@ def process_transit_query(
         }
     ]
 
+    over_budget = False
+    if fare_limit is not None:
+        try:
+            over_budget = fare_pkr > float(fare_limit)
+        except (TypeError, ValueError):
+            over_budget = False
+        if over_budget:
+            extra = (
+                f" Yeh kiraya aapki Rs. {int(fare_limit)} had se zyada hai."
+                if is_roman
+                else f" This fare exceeds your Rs. {int(fare_limit)} limit."
+            )
+            summary_text += extra
+
+    meets_deadline = None
+    now_mins = _hhmm_to_minutes(datetime.now().strftime("%H:%M"))
+    deadline_mins = _hhmm_to_minutes(arrival_deadline)
+    if now_mins is not None and deadline_mins is not None:
+        estimated_arrival = now_mins + int(eta_mins) + 25
+        meets_deadline = estimated_arrival <= deadline_mins
+        if not meets_deadline:
+            summary_text += (
+                " Deadline se pehle pohanchna mushkil ho sakta hai."
+                if is_roman
+                else " It may be difficult to arrive before your deadline."
+            )
+
     commuter_tips = (
         [
             "Local coach hai (Non-AC); rush ke auqaat mein bheer zyada hoti hai." if is_roman else "Non-AC local coach; peak hours can be crowded.",
@@ -281,7 +481,9 @@ def process_transit_query(
         "extracted_intent": {
             "origin": origin,
             "destination": destination,
-            "query_type": "route_and_fare"
+            "query_type": "route_and_fare",
+            "preference": preference,
+            "fare_limit": fare_limit,
         },
         "matched_route": route_id,
         "fare_evaluated": fare_pkr,
@@ -292,7 +494,30 @@ def process_transit_query(
         "disruption_flagged": has_disruption
     }
 
+    disruption_payload = {"active": False}
+    if has_disruption:
+        incident = next((i for i in (disruptions or []) if i.get("active")), {})
+        disruption_payload = {
+            "active": True,
+            "location": incident.get("affected_area"),
+            "description": disruption_warning,
+        }
+
+    result = {
+        "available": True,
+        "route": route_name,
+        "route_id": route_id,
+        "fare": fare_pkr,
+        "wait_minutes": eta_mins,
+        "origin": origin,
+        "destination": destination,
+        "over_budget": over_budget,
+        "meets_deadline": meets_deadline,
+        "disruption": disruption_payload,
+    }
+
     return {
         "reasoning_trace": reasoning_trace,
-        "journey_card": journey_card
+        "journey_card": journey_card,
+        "result": result,
     }
