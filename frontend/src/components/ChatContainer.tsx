@@ -39,16 +39,15 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "welcome-1",
     sender: "bot",
-    text: "Assalam-o-Alaikum! Main Safar AI hoon — aapka local transit guide aur route partner. Peoples Bus Service Route 1 (Model Colony ⇄ Tower) ya Sheraz Coach ke baray mein koi bhi sawaal poochein!",
+    text: "Assalam-o-Alaikum! Main Safar AI hoon — aapka Sheraz Coach route guide. CP 06 Malir Cantt se Hawksbay tak safar, stops aur kiraye ke baray mein poochein!",
     timestamp: "Just now"
   }
 ];
 
 const QUICK_PROMPTS = [
-  { label: "Model Colony se Tower", query: "Model Colony se Tower kitna kiraya hai?" },
-  { label: "Airport se Metropole", query: "Star Gate (Airport) se Metropole kaise jaun?" },
-  { label: "Karsaz se Arts Council", query: "Karsaz se Arts Council jana hai, kitne paise lagenge?" },
-  { label: "Sheraz Coach Safoora", query: "Sheraz Coach Safoora Chowrangi se Tower jayegi?" }
+  { label: "Safoora se Tower", query: "Sheraz Coach Safoora Chowrangi se Tower jayegi?" },
+  { label: "CP 06 se Hawksbay", query: "CP 06 Malir Cantt se Hawksbay ka kiraya kitna hai?" },
+  { label: "NED se Tower", query: "Sheraz Coach NED University se Tower jayegi?" }
 ];
 
 // --- Event-time helpers (module scope) --------------------------------------
@@ -396,7 +395,7 @@ export default function ChatContainer() {
           <input
             type="text"
             className="chat-input"
-            placeholder="Model Colony se Tower kitna kiraya hai?"
+            placeholder="Safoora se Tower ka kiraya kitna hai?"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -417,7 +416,7 @@ export default function ChatContainer() {
         </div>
 
         <div className="prompt-footer">
-          <p className="prompt-hint">Roman Urdu · اردو · English — Route 1 & Sheraz Coach</p>
+          <p className="prompt-hint">Roman Urdu · اردو · English — Sheraz Coach</p>
           <p className="prompt-hint prompt-hint--desktop">Safar AI can make mistakes. Verify critical trips.</p>
         </div>
       </div>

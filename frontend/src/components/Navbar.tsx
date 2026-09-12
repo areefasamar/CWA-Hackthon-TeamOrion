@@ -25,11 +25,6 @@ export default function Navbar() {
           <span className="pill-label">Live Network</span>
         </div>
 
-        <div className="header-pill" title="Peoples Bus Service — Route 1 (EV-1)">
-          <span className="pill-route-tag">R1</span>
-          <span className="pill-label">Model Colony ⇄ Tower</span>
-        </div>
-
         <div className="header-pill" title="Sheraz Coach — Malir Cantt ⇄ Hawksbay">
           <MapPin size={13} className="pill-icon" />
           <span className="pill-label">Sheraz Coach</span>

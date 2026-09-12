@@ -3,21 +3,34 @@
 import React, { useEffect, useState } from "react";
 import { Bus, Radio, Navigation, Gauge, Clock, ShieldCheck } from "lucide-react";
 
-const ROUTE_1_STOPS = [
-  { id: "ST-01", name: "Model Colony", landmark: "Terminal Origin" },
-  { id: "ST-02", name: "Malir Halt", landmark: "Malir Bridge" },
-  { id: "ST-03", name: "Star Gate", landmark: "Airport Road" },
-  { id: "ST-04", name: "Drigh Road Station", landmark: "Railway Station / Lal Kothi" },
-  { id: "ST-05", name: "Karsaz", landmark: "National Stadium Turn" },
-  { id: "ST-06", name: "Baloch Colony", landmark: "Expressway Flyover" },
-  { id: "ST-07", name: "Nursery", landmark: "PECHS Block 6" },
-  { id: "ST-08", name: "FTC", landmark: "Finance & Trade Centre" },
-  { id: "ST-09", name: "Metropole Hotel", landmark: "Saddar / Club Road" },
-  { id: "ST-10", name: "Arts Council", landmark: "Sindh Assembly" },
-  { id: "ST-11", name: "Tower", landmark: "Merewether Clock Tower (Terminal)" }
+const SHERAZ_STOPS = [
+  { id: "SHZ-STP-01", name: "CP 06 Malir Cantt", landmark: "Terminal Origin" },
+  { id: "SHZ-STP-02", name: "Safoora Chowrangi", landmark: "Safoora Goth" },
+  { id: "SHZ-STP-03", name: "Bin Hashim / NADRA Office", landmark: "Safoora" },
+  { id: "SHZ-STP-04", name: "Mausamiyat", landmark: "Mausamiyat Chowrangi" },
+  { id: "SHZ-STP-05", name: "Dow / Ojha Campus", landmark: "Ojha Hospital" },
+  { id: "SHZ-STP-06", name: "KU Main Gate", landmark: "Karachi University" },
+  { id: "SHZ-STP-07", name: "NED University", landmark: "NED Main Gate" },
+  { id: "SHZ-STP-08", name: "Safari Park", landmark: "University Road Safari" },
+  { id: "SHZ-STP-09", name: "NIPA Chowrangi", landmark: "Gulshan Block 6" },
+  { id: "SHZ-STP-10", name: "Urdu Science College", landmark: "Federal Urdu University" },
+  { id: "SHZ-STP-11", name: "Hassan Square", landmark: "Expo Centre Karachi" },
+  { id: "SHZ-STP-12", name: "Sabzi Mandi / Askari Park", landmark: "Kashmir Road Extension" },
+  { id: "SHZ-STP-13", name: "Jail Chowrangi", landmark: "Jail Road" },
+  { id: "SHZ-STP-14", name: "Mazar-e-Quaid", landmark: "Quaid Tomb" },
+  { id: "SHZ-STP-15", name: "Old Numaish", landmark: "Numaish Chowrangi" },
+  { id: "SHZ-STP-16", name: "Plaza / MA Jinnah Road", landmark: "Plaza Cinema" },
+  { id: "SHZ-STP-17", name: "Jama Cloth Market", landmark: "Lighthouse Market" },
+  { id: "SHZ-STP-18", name: "Denso Hall", landmark: "MA Jinnah Wholesale Market" },
+  { id: "SHZ-STP-19", name: "Boulton Market", landmark: "Kharadar Entrance" },
+  { id: "SHZ-STP-20", name: "Tower", landmark: "Merewether Tower" },
+  { id: "SHZ-STP-21", name: "Jamat Khana", landmark: "Aga Khan Road" },
+  { id: "SHZ-STP-22", name: "G. Allana Road", landmark: "Machli Miyani" },
+  { id: "SHZ-STP-23", name: "Gulbai", landmark: "Gulbai Chowrangi" },
+  { id: "SHZ-STP-24", name: "Hawksbay", landmark: "Terminal Destination" }
 ];
 
-const BUS_ID = "PB-101";
+const BUS_ID = "SHZ-01";
 const TICK_MS = 4500;
 
 interface TelemetryState {
@@ -27,9 +40,7 @@ interface TelemetryState {
 }
 
 export default function RouteVisualizer() {
-  // Simulated live telemetry ticker — PB-101 ping-pongs along the corridor
-  // (mirrors the backend telemetry simulator for the demo).
-  const [telemetry, setTelemetry] = useState<TelemetryState>({ idx: 3, dir: 1, speed: 38 });
+  const [telemetry, setTelemetry] = useState<TelemetryState>({ idx: 5, dir: 1, speed: 28 });
   const [activeStop, setActiveStop] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +48,7 @@ export default function RouteVisualizer() {
       setTelemetry((prev) => {
         let dir = prev.dir;
         let next = prev.idx + dir;
-        if (next > ROUTE_1_STOPS.length - 1 || next < 0) {
+        if (next > SHERAZ_STOPS.length - 1 || next < 0) {
           dir = (dir * -1) as 1 | -1;
           next = prev.idx + dir;
         }
@@ -48,11 +59,11 @@ export default function RouteVisualizer() {
     return () => clearInterval(timer);
   }, []);
 
-  const n = ROUTE_1_STOPS.length;
+  const n = SHERAZ_STOPS.length;
   const { idx, dir, speed } = telemetry;
-  const currentStop = ROUTE_1_STOPS[idx];
-  const nextStop = ROUTE_1_STOPS[idx + dir] ?? currentStop;
-  const heading = dir === 1 ? "Westbound · towards Tower" : "Eastbound · towards Model Colony";
+  const currentStop = SHERAZ_STOPS[idx];
+  const nextStop = SHERAZ_STOPS[idx + dir] ?? currentStop;
+  const heading = dir === 1 ? "Westbound · towards Hawksbay" : "Eastbound · towards CP 06";
   const etaNext = Math.max(1, Math.round(120 / speed)); // minutes to next stop
   const stopsToEnd = dir === 1 ? n - 1 - idx : idx;
   const etaTerminus = stopsToEnd * etaNext;
@@ -69,17 +80,17 @@ export default function RouteVisualizer() {
   const stopEta = (stopIdx: number) => Math.max(1, Math.abs(stopIdx - idx) * etaNext);
 
   return (
-    <section className="transit-stage" aria-label="Live Route 1 corridor status">
+    <section className="transit-stage" aria-label="Live Sheraz Coach corridor status">
       {/* Stage hero — corridor identity + live telemetry */}
       <div className="stage-hero">
         <div className="stage-hero-content">
           <div>
             <span className="stage-eyebrow">
               <Radio size={12} />
-              Live Corridor · Sharea Faisal
+              Live Corridor · University Road to Hawksbay
             </span>
-            <h2 className="stage-title">Route 1 (EV-1)</h2>
-            <p className="stage-desc">Model Colony ⇄ Tower · 11 canonical stops · Peoples Bus Service</p>
+            <h2 className="stage-title">Sheraz Coach</h2>
+            <p className="stage-desc">CP 06 Malir Cantt ⇄ Hawksbay · 24 canonical stops</p>
           </div>
           <span className="stage-live-pill">
             <span className="live-dot" />
@@ -90,7 +101,7 @@ export default function RouteVisualizer() {
         <div className="telemetry-strip">
           <span className="telemetry-chip accent">
             <Bus size={13} className="tc-icon" />
-            {BUS_ID} · Electric AC
+            {BUS_ID} · Local Non-AC Coach
           </span>
           <span className="telemetry-chip">
             <Navigation size={13} className="tc-icon" />
@@ -133,7 +144,7 @@ export default function RouteVisualizer() {
               </span>
             </span>
 
-            {ROUTE_1_STOPS.map((stop, i) => {
+            {SHERAZ_STOPS.map((stop, i) => {
               const isTerminal = i === 0 || i === n - 1;
               const isBehind = dir === 1 ? i < idx : i > idx;
               const isCurrent = i === idx;
@@ -192,11 +203,11 @@ export default function RouteVisualizer() {
         <div className="stage-stats">
           <div className="stage-stat">
             <span className="stage-stat-label">Official Fare</span>
-            <span className="stage-stat-value">Rs. 50 Flat</span>
+            <span className="stage-stat-value">Rs. 20–100 Stage Fare</span>
           </div>
           <div className="stage-stat">
             <span className="stage-stat-label">Fleet</span>
-            <span className="stage-stat-value">Electric AC</span>
+            <span className="stage-stat-value">Local Mini Bus · Non-AC</span>
           </div>
           <div className="stage-stat">
             <span className="stage-stat-label">Terminus ETA</span>

@@ -1,6 +1,6 @@
 // ==============================================================================
 // Karachi Transit AI — API Route: /api/routes
-// Fetches live routes and stops directly from Supabase PostgreSQL database
+// Fetches the Sheraz route and stops from Supabase PostgreSQL database
 // ==============================================================================
 
 import { NextResponse } from "next/server";
@@ -13,15 +13,6 @@ export async function GET() {
       source: "hardcoded_fallback",
       message: "Supabase client is not configured (check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY)",
       routes: [
-        {
-          route_code: "PBS-01",
-          name: "Peoples Bus Service - Route 1 (EV-1)",
-          operator: "Peoples Bus Service",
-          fleet_type: "Electric AC",
-          fare_type: "FLAT",
-          base_fare_pkr: 50,
-          stops_count: 11
-        },
         {
           route_code: "SHERAZ-01",
           name: "Sheraz Coach",
@@ -39,6 +30,7 @@ export async function GET() {
     const { data: routes, error: routesError } = await supabase
       .from("routes")
       .select("id, route_code, name, operator, fleet_type, fare_type, base_fare_pkr, max_fare_pkr, is_active, stops(id, stop_code, name, sequence_number, lat, lng, is_terminal)")
+      .eq("route_code", "SHERAZ-01")
       .order("route_code", { ascending: true });
 
     if (routesError) {
