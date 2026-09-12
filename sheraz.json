@@ -1,0 +1,302 @@
+{
+  "route_id": "SHERAZ-01",
+  "route_name": "Sheraz Coach",
+  "bus_type": "Local Mini Bus / Coach",
+  "operator": "Sheraz Transport Co.",
+  "ac_available": false,
+  "status": "ACTIVE",
+  "operating_hours": {
+    "start": "06:00",
+    "end": "22:30"
+  },
+  "fare_policy": {
+    "type": "STAGE_BASED",
+    "currency": "PKR",
+    "minimum_fare": 20,
+    "maximum_fare": 100,
+    "payment_methods": ["CASH_ONLY"]
+  },
+  "route_aliases": [
+    "sheraz",
+    "shiraz",
+    "sheraz coach",
+    "sheraz bus",
+    "cp6 bus",
+    "hawksbay coach"
+  ],
+  "canonical_stops": [
+    {
+      "sequence": 1,
+      "stop_id": "SHZ-STP-01",
+      "official_name": "CP 06 Malir Cantt",
+      "is_terminal": true,
+      "coordinates": { "lat": 24.9351, "lng": 67.1895 },
+      "sub_landmarks": ["Check Post 6", "Malir Cantt Gate 6", "Piccadilly", "Cinema Chowk"]
+    },
+    {
+      "sequence": 2,
+      "stop_id": "SHZ-STP-02",
+      "official_name": "Safoora Chowrangi",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9458, "lng": 67.1478 },
+      "sub_landmarks": ["Safoora", "Safoora Goth", "Safoora Chowk"]
+    },
+    {
+      "sequence": 3,
+      "stop_id": "SHZ-STP-03",
+      "official_name": "Bin Hashim / NADRA Office",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9432, "lng": 67.1352 },
+      "sub_landmarks": ["Bin Hashim Supermarket", "NADRA Executive Center Safoora", "Supermarket Strip"]
+    },
+    {
+      "sequence": 4,
+      "stop_id": "SHZ-STP-04",
+      "official_name": "Mausamiyat",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9401, "lng": 67.1265 },
+      "sub_landmarks": ["Mosamiyat", "Mausamiyat Chowrangi", "Meteorological Department"]
+    },
+    {
+      "sequence": 5,
+      "stop_id": "SHZ-STP-05",
+      "official_name": "Dow / Ojha Campus",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9372, "lng": 67.1211 },
+      "sub_landmarks": ["Dow University", "Ojha Hospital", "DUHS Ojha"]
+    },
+    {
+      "sequence": 6,
+      "stop_id": "SHZ-STP-06",
+      "official_name": "KU Main Gate",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9348, "lng": 67.1162 },
+      "sub_landmarks": ["Karachi University", "KU Gate", "Sheikh Zayed Islamic Centre", "SUPARCO"]
+    },
+    {
+      "sequence": 7,
+      "stop_id": "SHZ-STP-07",
+      "official_name": "NED University",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9315, "lng": 67.1118 },
+      "sub_landmarks": ["NED", "NED Main Gate", "NED Chowrangi"]
+    },
+    {
+      "sequence": 8,
+      "stop_id": "SHZ-STP-08",
+      "official_name": "Safari Park",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9248, "lng": 67.1035 },
+      "sub_landmarks": ["Safari Park Gate", "University Road Safari"]
+    },
+    {
+      "sequence": 9,
+      "stop_id": "SHZ-STP-09",
+      "official_name": "NIPA Chowrangi",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9178, "lng": 67.0971 },
+      "sub_landmarks": ["N.I.P.A", "Nipa Bridge", "Nipa Pul", "Gulshan Block 6"]
+    },
+    {
+      "sequence": 10,
+      "stop_id": "SHZ-STP-10",
+      "official_name": "Urdu Science College",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9112, "lng": 67.0883 },
+      "sub_landmarks": ["Federal Urdu University", "Urdu College", "Gulshan Block 13"]
+    },
+    {
+      "sequence": 11,
+      "stop_id": "SHZ-STP-11",
+      "official_name": "Hassan Square",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.9031, "lng": 67.0789 },
+      "sub_landmarks": ["Hasan Square", "Expo Centre Karachi", "Civic Centre"]
+    },
+    {
+      "sequence": 12,
+      "stop_id": "SHZ-STP-12",
+      "official_name": "Sabzi Mandi / Askari Park",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8980, "lng": 67.0698 },
+      "sub_landmarks": ["Purani Sabzi Mandi", "Askari Amusement Park", "Kashmir Road Extension"]
+    },
+    {
+      "sequence": 13,
+      "stop_id": "SHZ-STP-13",
+      "official_name": "Jail Chowrangi",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8903, "lng": 67.0581 },
+      "sub_landmarks": ["Jail Road", "Central Jail Karachi", "PIB Colony Entrance"]
+    },
+    {
+      "sequence": 14,
+      "stop_id": "SHZ-STP-14",
+      "official_name": "Mazar-e-Quaid",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8746, "lng": 67.0398 },
+      "sub_landmarks": ["Quaid Tomb", "Mazar Sharif", "PP Chowrangi"]
+    },
+    {
+      "sequence": 15,
+      "stop_id": "SHZ-STP-15",
+      "official_name": "Old Numaish",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8712, "lng": 67.0321 },
+      "sub_landmarks": ["Numaish", "Numaish Chowrangi", "BRT Green Line Numaish"]
+    },
+    {
+      "sequence": 16,
+      "stop_id": "SHZ-STP-16",
+      "official_name": "Plaza / MA Jinnah Road",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8633, "lng": 67.0215 },
+      "sub_landmarks": ["Bunder Road", "Bander Road", "Plaza Cinema", "Radio Pakistan"]
+    },
+    {
+      "sequence": 17,
+      "stop_id": "SHZ-STP-17",
+      "official_name": "Jama Cloth Market",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8581, "lng": 67.0142 },
+      "sub_landmarks": ["Jama Cloth", "Lighthouse Market"]
+    },
+    {
+      "sequence": 18,
+      "stop_id": "SHZ-STP-18",
+      "official_name": "Denso Hall",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8532, "lng": 67.0089 },
+      "sub_landmarks": ["Dhanji Hall", "MA Jinnah Wholesale Market"]
+    },
+    {
+      "sequence": 19,
+      "stop_id": "SHZ-STP-19",
+      "official_name": "Boulton Market",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8504, "lng": 67.0041 },
+      "sub_landmarks": ["Bolton Market", "Kharadar Entrance"]
+    },
+    {
+      "sequence": 20,
+      "stop_id": "SHZ-STP-20",
+      "official_name": "Tower",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8489, "lng": 67.0019 },
+      "sub_landmarks": ["Merewether Tower", "Custom House", "Kharadar"]
+    },
+    {
+      "sequence": 21,
+      "stop_id": "SHZ-STP-21",
+      "official_name": "Jamat Khana",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8461, "lng": 66.9950 },
+      "sub_landmarks": ["Kharadar Jamatkhana", "Ismaili Jamatkhana", "Aga Khan Road"]
+    },
+    {
+      "sequence": 22,
+      "stop_id": "SHZ-STP-22",
+      "official_name": "G. Allana Road",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8422, "lng": 66.9881 },
+      "sub_landmarks": ["Ghulam Ali Allana Road", "G Alana Road", "Machli Miyani"]
+    },
+    {
+      "sequence": 23,
+      "stop_id": "SHZ-STP-23",
+      "official_name": "Gulbai",
+      "is_terminal": false,
+      "coordinates": { "lat": 24.8495, "lng": 66.9654 },
+      "sub_landmarks": ["Gulbai Chowrangi", "SITE South", "Mauripur Road Start"]
+    },
+    {
+      "sequence": 24,
+      "stop_id": "SHZ-STP-24",
+      "official_name": "Hawksbay",
+      "is_terminal": true,
+      "coordinates": { "lat": 24.8512, "lng": 66.8621 },
+      "sub_landmarks": ["Hawks Bay Beach", "Kakapir", "Hawksbay Truck Stand", "Mauripur"]
+    }
+  ],
+  "stage_fares": [
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-02", "fare_pkr": 20 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-03", "fare_pkr": 30 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-04", "fare_pkr": 40 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-05", "fare_pkr": 50 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-06", "fare_pkr": 60 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-07", "fare_pkr": 60 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-09", "fare_pkr": 60 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-11", "fare_pkr": 70 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-15", "fare_pkr": 80 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-20", "fare_pkr": 90 },
+    { "from_stop_id": "SHZ-STP-01", "to_stop_id": "SHZ-STP-24", "fare_pkr": 100 }
+  ],
+  "karachi_alias_dictionary": {
+    "Airport/Jinnah": "Star Gate",
+    "Lal Kothi / Drigh Road": "Drigh Road Station",
+    "Avari / Metropol": "Metropole Hotel",
+    "Karsaz Chowrangi": "Karsaz",
+    "Tower / Kharadar": "Tower",
+    "cp 6": "CP 06 Malir Cantt",
+    "cp6": "CP 06 Malir Cantt",
+    "check post 6": "CP 06 Malir Cantt",
+    "malir cantt gate 6": "CP 06 Malir Cantt",
+    "piccadilly": "CP 06 Malir Cantt",
+    "cinema chowk": "CP 06 Malir Cantt",
+    "safoora": "Safoora Chowrangi",
+    "safoora goth": "Safoora Chowrangi",
+    "bin hashim": "Bin Hashim / NADRA Office",
+    "nadra office": "Bin Hashim / NADRA Office",
+    "nadra office safoora": "Bin Hashim / NADRA Office",
+    "mosmiyat": "Mausamiyat",
+    "mosamiyat": "Mausamiyat",
+    "dow": "Dow / Ojha Campus",
+    "ojha": "Dow / Ojha Campus",
+    "dow University": "Dow / Ojha Campus",
+    "duhs": "Dow / Ojha Campus",
+    "ku": "KU Main Gate",
+    "karachi university": "KU Main Gate",
+    "sheikh zaid": "KU Main Gate",
+    "suparco": "KU Main Gate",
+    "ned": "NED University",
+    "ned university": "NED University",
+    "safari park": "Safari Park",
+    "nipa": "NIPA Chowrangi",
+    "n.i.p.a": "NIPA Chowrangi",
+    "nipa pul": "NIPA Chowrangi",
+    "urdu science college": "Urdu Science College",
+    "urdu college": "Urdu Science College",
+    "hasan square": "Hassan Square",
+    "hassan square": "Hassan Square",
+    "expo centre": "Hassan Square",
+    "civic centre": "Hassan Square",
+    "sabzi mandi": "Sabzi Mandi / Askari Park",
+    "purani sabzi mandi": "Sabzi Mandi / Askari Park",
+    "askari park": "Sabzi Mandi / Askari Park",
+    "jail road": "Jail Chowrangi",
+    "jail chowrangi": "Jail Chowrangi",
+    "central jail": "Jail Chowrangi",
+    "mazar e quaid": "Mazar-e-Quaid",
+    "mazar": "Mazar-e-Quaid",
+    "quaid mazar": "Mazar-e-Quaid",
+    "numaish": "Old Numaish",
+    "old numaish": "Old Numaish",
+    "bander road": "Plaza / MA Jinnah Road",
+    "bunder road": "Plaza / MA Jinnah Road",
+    "plaza": "Plaza / MA Jinnah Road",
+    "jama cloth": "Jama Cloth Market",
+    "denso hall": "Denso Hall",
+    "dhanji hall": "Denso Hall",
+    "boulton market": "Boulton Market",
+    "bolton market": "Boulton Market",
+    "tower": "Tower",
+    "custom house": "Tower",
+    "kharadar": "Tower",
+    "jamat khana": "Jamat Khana",
+    "g allana road": "G. Allana Road",
+    "g. alana road": "G. Allana Road",
+    "gulbai": "Gulbai",
+    "hawksbay": "Hawksbay",
+    "hawks bay": "Hawksbay"
+  }
+}
