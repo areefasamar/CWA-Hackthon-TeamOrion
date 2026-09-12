@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Safar Transit AI - Multimodal Journey Planning & Telematics</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  
+  <!-- Leaflet CSS for Live Interactive Transit Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#faf8ff",
+            "surface-dim": "#d2d9f4",
+            "surface-bright": "#faf8ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f3ff",
+            "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff",
+            "surface-container-highest": "#dae2fd",
+            "on-surface": "#131b2e",
+            "on-surface-variant": "#464555",
+            "inverse-surface": "#283044",
+            "inverse-on-surface": "#eef0ff",
+            "outline": "#777587",
+            "outline-variant": "#c7c4d8",
+            "surface-tint": "#4d44e3",
+            "primary": "#3525cd",
+            "on-primary": "#ffffff",
+            "primary-container": "#4f46e5",
+            "on-primary-container": "#dad7ff",
+            "inverse-primary": "#c3c0ff",
+            "secondary": "#0051d5",
+            "on-secondary": "#ffffff",
+            "secondary-container": "#316bf3",
+            "on-secondary-container": "#fefcff",
+            "tertiary": "#484757",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#605e6f",
+            "on-tertiary-container": "#dcd9ed",
+            "error": "#ba1a1a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#e2dfff",
+            "primary-fixed-dim": "#c3c0ff",
+            "on-primary-fixed": "#0f0069",
+            "on-primary-fixed-variant": "#3323cc",
+            "secondary-fixed": "#dbe1ff",
+            "secondary-fixed-dim": "#b4c5ff",
+            "on-secondary-fixed": "#00174b",
+            "on-secondary-fixed-variant": "#003ea8",
+            "tertiary-fixed": "#e4e0f5",
+            "tertiary-fixed-dim": "#c7c4d8",
+            "on-tertiary-fixed": "#1b1a29",
+            "on-tertiary-fixed-variant": "#464555",
+            "background": "#faf8ff",
+            "on-background": "#131b2e",
+            "surface-variant": "#dae2fd"
+          },
+          borderRadius: {
+            "sm": "0.5rem",
+            "DEFAULT": "1rem",
+            "md": "1.5rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "gutter": "1.5rem",
+            "gutter-mobile": "1rem",
+            "margin": "2rem",
+            "margin-mobile": "1rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2.5rem"
+          },
+          fontFamily: {
+            "display-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "display-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "title-md": ["Plus Jakarta Sans", "sans-serif"],
+            "title-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"]
+          },
+          fontSize: {
+            "display-lg": ["44px", { lineHeight: "52px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "display-lg-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-lg-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+            "title-md": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+            "title-sm": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+            "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }],
+            "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+            "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }],
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "700" }]
+          }
+        }
+      }
+    };
+  </script>
+  
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body class="bg-background font-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-primary">
+  
+  <!-- Left Persistent Sidebar Navigation -->
+  <aside id="safar-sidebar" class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between py-space-md transition-transform duration-300 -translate-x-full lg:translate-x-0 border-r border-surface-container/60">
+    <div class="flex flex-col px-space-md overflow-hidden">
+      <!-- Brand Header -->
+      <div class="flex items-center gap-space-sm px-space-xs py-space-sm mb-space-md cursor-pointer" onclick="location.reload()">
+        <img alt="Safar Transit AI Logo" class="w-9 h-9 rounded-full object-cover shadow-[0_4px_12px_-2px_rgba(79,70,229,0.25)] border border-primary/20" src="https://lh3.googleusercontent.com/aida/AEtjO1UDhQQha1kvvMBG63vfg6poRS_LFYo1d1iLgYkW4S1kpM27V2BveLMg13d1-p9dDlspdtG41sEp5CcfBUR02Goxx9DZU-Uua-NKDKiHWC2VuPiE1oD2wedXgD0E4qwG4mMHiWMhot_U4N3R0kBIJKK_t658Wo-vFeb7brOsIcVUObDaBnaxwWJPg6Xk1X3_tz98yGPytqtXC9qsxreUFS7MP9ARTiRNWXtlq0sZ9KtPlSaWMoky584sK5NXDht7mwxu1u2ToE-tINY"/>
+        <div class="flex flex-col">
+          <div class="font-title-md text-title-md text-primary tracking-tight font-bold leading-none">Safar</div>
+          <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase leading-tight">Transit AI Studio</span>
+        </div>
+      </div>
+
+      <!-- New Journey Action Button -->
+      <div class="mb-space-md">
+        <button id="new-journey-btn" class="w-full flex items-center justify-between px-space-md py-space-sm rounded-full bg-primary-container text-on-primary hover:bg-primary transition-all duration-200 shadow-glow-primary active:scale-[0.98]" type="button">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-title-sm">add</span>
+            <span class="font-label-lg text-label-lg font-semibold">New Journey</span>
+          </div>
+          <span class="font-label-sm text-label-sm bg-white/20 px-space-xs py-0.5 rounded-full tracking-wider font-mono">⌘K</span>
+        </button>
+      </div>
+
+      <!-- Navigation Section -->
+      <div class="font-label-sm text-label-sm text-on-surface-variant px-space-xs mb-space-xs uppercase tracking-wider font-semibold">Navigation</div>
+      <nav class="flex flex-col gap-1 mb-space-lg">
+        <a aria-current="page" class="nav-link flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-surface-container-highest text-primary font-title-sm font-semibold rounded-full" data-path="chat-workspace" href="#">
+          <span class="material-symbols-outlined text-title-md">search</span>
+          <span>Search &amp; Explore</span>
+        </a>
+        <a class="nav-link flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-label-lg text-label-lg" data-path="transit-schedules" href="#">
+          <span class="material-symbols-outlined text-title-md">schedule</span>
+          <span>Transit Schedules</span>
+        </a>
+        <a class="nav-link flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-label-lg text-label-lg" data-path="live-telematics" href="#">
+          <span class="material-symbols-outlined text-title-md">sensors</span>
+          <span>Live Telematics</span>
+        </a>
+        <a class="nav-link flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-label-lg text-label-lg" data-path="saved-routes" href="#">
+          <span class="material-symbols-outlined text-title-md">bookmark_border</span>
+          <span>Saved Routes</span>
+        </a>
+        <a class="nav-link flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-label-lg text-label-lg" data-path="transit-library" href="#">
+          <span class="material-symbols-outlined text-title-md">folder_open</span>
+          <span>Transit Library</span>
+        </a>
+      </nav>
+
+      <!-- Recent Chats -->
+      <div class="font-label-sm text-label-sm text-on-surface-variant px-space-xs mb-space-xs uppercase tracking-wider font-semibold flex items-center justify-between">
+        <span>Recent Chats</span>
+        <span class="material-symbols-outlined text-label-sm cursor-pointer text-on-surface-variant hover:text-on-surface" title="Chat History">history</span>
+      </div>
+      <div class="flex flex-col gap-1 overflow-y-auto max-h-56 pr-1">
+        <a class="recent-chat-item flex items-center gap-space-xs px-space-md py-space-xs rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm truncate cursor-pointer" data-title="Bus timings to Downtown" href="#">
+          <span class="material-symbols-outlined text-label-md shrink-0">chat_bubble_outline</span>
+          <span class="truncate">Bus timings to Downtown</span>
+        </a>
+        <a class="recent-chat-item flex items-center gap-space-xs px-space-md py-space-xs rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm truncate cursor-pointer" data-title="Route 42 fare breakdown" href="#">
+          <span class="material-symbols-outlined text-label-md shrink-0">chat_bubble_outline</span>
+          <span class="truncate">Route 42 fare breakdown</span>
+        </a>
+        <a class="recent-chat-item flex items-center gap-space-xs px-space-md py-space-xs rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm truncate cursor-pointer" data-title="Live location updates" href="#">
+          <span class="material-symbols-outlined text-label-md shrink-0">chat_bubble_outline</span>
+          <span class="truncate">Live location updates</span>
+        </a>
+        <a class="recent-chat-item flex items-center gap-space-xs px-space-md py-space-xs rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm truncate cursor-pointer" data-title="Platform 4 express" href="#">
+          <span class="material-symbols-outlined text-label-md shrink-0">chat_bubble_outline</span>
+          <span class="truncate">Platform 4 express</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Engine Telemetry Status Badge -->
+    <div class="px-space-md pt-space-xs">
+      <div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between border border-surface-container">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-primary text-title-sm">smart_toy</span>
+          <div class="flex flex-col">
+            <span class="font-label-sm text-label-sm font-semibold text-on-surface">Safar AI Engine</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">v2.5 Multimodal</span>
+          </div>
+        </div>
+        <span class="w-2.5 h-2.5 rounded-full bg-secondary-container animate-pulse" title="Engine Operational"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="lg:pl-72 transition-all duration-300">
+    <!-- Top Persistent Header -->
+    <header class="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md lg:px-space-lg border-b border-surface-container/60">
+      <div class="flex items-center gap-space-sm">
+        <!-- Mobile Menu Hamburger Trigger -->
+        <button id="mobile-menu-btn" class="lg:hidden w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container" type="button">
+          <span class="material-symbols-outlined text-headline-sm">menu</span>
+        </button>
+
+        <!-- Breadcrumbs -->
+        <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+          <span class="hover:text-on-surface cursor-pointer hidden sm:inline" onclick="location.reload()">Safar</span>
+          <span class="material-symbols-outlined text-label-sm hidden sm:inline">chevron_right</span>
+          <span class="hover:text-on-surface cursor-pointer">Transit Workspace</span>
+          <span class="material-symbols-outlined text-label-sm">chevron_right</span>
+          <span class="text-on-surface font-semibold truncate max-w-[120px] sm:max-w-none">Route Intelligence</span>
+        </div>
+
+        <!-- Safar AI Status Pill -->
+        <div class="hidden sm:flex items-center gap-1 px-space-sm py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.9)]">
+          <span class="material-symbols-outlined text-label-md text-secondary">bolt</span>
+          <span>Safar AI 2.5 Transit</span>
+        </div>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-space-xs sm:gap-space-sm">
+        <!-- Split Map Dynamic Toggle -->
+        <button id="toggle-map-btn" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-sm text-label-sm transition-all" type="button" title="Toggle Live Transit Map Split Screen">
+          <span class="material-symbols-outlined text-title-sm">map</span>
+          <span class="btn-label hidden sm:inline">Split Map</span>
+        </button>
+
+        <!-- Share Trigger -->
+        <button onclick="window.showToast('Shareable route link copied to clipboard!')" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-sm text-label-sm transition-all" type="button">
+          <span class="material-symbols-outlined text-title-sm">ios_share</span>
+          <span class="hidden sm:inline">Share</span>
+        </button>
+
+        <!-- Tune Settings Button -->
+        <button onclick="window.openScheduleModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Settings & Schedules" type="button">
+          <span class="material-symbols-outlined text-title-sm">tune</span>
+        </button>
+
+        <div class="h-4 w-px bg-surface-container"></div>
+
+        <!-- Profile Dropdown -->
+        <div class="flex items-center gap-space-xs pl-space-xs cursor-pointer" onclick="window.showToast('Logged in as Traveler #8821')">
+          <img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-primary/20" src="https://lh3.googleusercontent.com/aida/AEtjO1UDhQQha1kvvMBG63vfg6poRS_LFYo1d1iLgYkW4S1kpM27V2BveLMg13d1-p9dDlspdtG41sEp5CcfBUR02Goxx9DZU-Uua-NKDKiHWC2VuPiE1oD2wedXgD0E4qwG4mMHiWMhot_U4N3R0kBIJKK_t658Wo-vFeb7brOsIcVUObDaBnaxwWJPg6Xk1X3_tz98yGPytqtXC9qsxreUFS7MP9ARTiRNWXtlq0sZ9KtPlSaWMoky584sK5NXDht7mwxu1u2ToE-tINY"/>
+          <span class="material-symbols-outlined text-label-sm text-on-surface-variant">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Body -->
+    <main class="relative pt-16 min-h-screen bg-background">
+      <div class="flex flex-row w-full h-[calc(100vh-4rem)]">
+        
+        <!-- Conversational Stream Column (Left / Full) -->
+        <div id="main-chat-col" class="max-w-4xl mx-auto w-full px-space-gutter py-space-xl flex flex-col gap-space-lg pb-44 overflow-y-auto transition-all duration-300">
+          
+          <!-- Hero Brand Block -->
+          <div class="flex flex-col items-center text-center pt-space-xs pb-space-sm">
+            <div class="relative mb-space-md group cursor-pointer" onclick="window.sendFollowUpQuery('What are the evening return trip timings?')">
+              <div class="absolute -inset-1.5 rounded-full bg-gradient-to-r from-primary/20 via-secondary/20 to-primary-fixed blur-md opacity-80 group-hover:opacity-100 transition-opacity"></div>
+              <div class="relative w-24 h-24 rounded-full bg-surface-container-lowest shadow-[0_8px_28px_rgba(79,70,229,0.12)] p-1.5 flex items-center justify-center border border-surface-container">
+                <img alt="Safar Truck Art Bus" class="w-full h-full object-contain rounded-full transform group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX8IBTejjHq5wLo2PnPjPbcJB7RrLittOgyRMfiQ6T86Eo1d1v6NA1_lZWYjUbdy9flD9A9f-p5WRdMhgSSqe7PvIM4m0ZIWWiBeF0CrffrfL4f760MWNX0fixh7cVRtfQbnI4QqM4-9W6gKZ4gpMCWSxbstpvwrQMZrJgdFfuOwvj_nRqdexXdDd7HP4XpaVy5dwYaFiKbr4YINnAQOa9poQvY9wKLkTFKX3s9Bx1HajlYpS67sRHstHzEAF8G5VZRgQ"/>
+              </div>
+              <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-space-sm py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm">
+                Safar Transit Copilot
+              </span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-space-xs">
+              Where would you like to travel today?
+            </h1>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mt-space-xs">
+              Real-time routes, live telematics, and transit fare intelligence across the network.
+            </p>
+          </div>
+
+          <!-- Perplexity-Style Mode Tabs -->
+          <div class="flex items-center justify-between bg-surface-container-lowest rounded-full p-1.5 shadow-[0_2px_12px_rgba(79,70,229,0.05)] border border-surface-container/60">
+            <div class="flex items-center gap-1 overflow-x-auto">
+              <button onclick="window.switchModeTab('answer')" data-tab="answer" class="mode-tab-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-primary font-label-md text-label-md transition" type="button">
+                <span class="material-symbols-outlined text-label-md" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                <span>Answer</span>
+              </button>
+              <button onclick="window.switchModeTab('live-tracking')" data-tab="live-tracking" class="mode-tab-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition font-label-md text-label-md" type="button">
+                <span class="material-symbols-outlined text-label-md">sensors</span>
+                <span>Live Tracking</span>
+              </button>
+              <button onclick="window.switchModeTab('fare-routes')" data-tab="fare-routes" class="mode-tab-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition font-label-md text-label-md" type="button">
+                <span class="material-symbols-outlined text-label-md">directions_transit</span>
+                <span>Fare &amp; Routes</span>
+              </button>
+              <button onclick="window.switchModeTab('sources')" data-tab="sources" class="mode-tab-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition font-label-md text-label-md" type="button">
+                <span class="material-symbols-outlined text-label-md">lan</span>
+                <span>Sources</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">8 Stations</span>
+              </button>
+            </div>
+            <div class="hidden sm:flex items-center gap-1 text-on-surface-variant pr-space-sm font-label-sm text-label-sm">
+              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+              <span>GTFS-RT Active</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Conversation Stream -->
+          <div id="conversation-stream" class="flex flex-col gap-space-lg">
+            
+            <!-- Default User Query Card -->
+            <div class="user-query-card bg-surface-container-lowest rounded-lg p-space-lg shadow-[0_4px_20px_-2px_rgba(79,70,229,0.06)] flex flex-col gap-space-sm border border-surface-container/60">
+              <div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+                <div class="flex items-center gap-space-xs">
+                  <span class="w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-label-sm font-bold">U</span>
+                  <span class="font-label-md text-label-md text-on-surface font-semibold">Traveler Query</span>
+                  <span>•</span>
+                  <span>10:48 AM</span>
+                </div>
+                <div class="flex items-center gap-space-xs">
+                  <button onclick="window.editQueryText(this)" class="p-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition" title="Edit query" type="button">
+                    <span class="material-symbols-outlined text-title-sm">edit</span>
+                  </button>
+                  <button onclick="window.copyQueryText(this)" class="p-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition" title="Copy text" type="button">
+                    <span class="material-symbols-outlined text-title-sm">content_copy</span>
+                  </button>
+                </div>
+              </div>
+              <p class="query-text font-title-md text-title-md text-on-surface font-semibold leading-snug">
+                Find the fastest route from Central Station to Innovation Tech Park during peak hours, and check if Route 104 Express has AC.
+              </p>
+            </div>
+
+            <!-- Primary AI Response Container -->
+            <div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-safar-rest flex flex-col gap-space-lg border border-surface-container/60">
+              
+              <!-- Feed Badging & Telemetry Pill -->
+              <div class="flex flex-wrap items-center justify-between gap-space-xs pb-space-xs">
+                <div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full">
+                  <span class="w-2 h-2 rounded-full bg-secondary-container animate-ping"></span>
+                  <span class="material-symbols-outlined text-label-md text-primary">hub</span>
+                  <span class="font-label-sm text-label-sm text-on-surface font-semibold">Researched 4 transit feeds</span>
+                  <span class="text-on-surface-variant text-label-sm">•</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">2.1s latency</span>
+                </div>
+                <div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-title-sm text-secondary">verified_user</span>
+                  <span>Verified GTFS Schedule 2026.4</span>
+                </div>
+              </div>
+
+              <!-- Sources Consulted Bento Grid -->
+              <div class="flex flex-col gap-space-xs">
+                <div class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                  Sources Consulted
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
+                  <div onclick="window.toggleSplitMap(true)" class="p-space-xs px-space-sm rounded-DEFAULT bg-surface-container-low hover:bg-surface-container transition flex items-center gap-space-xs cursor-pointer">
+                    <span class="material-symbols-outlined text-title-sm text-primary">directions_bus</span>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Route 104 Express</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Live Telematics</span>
+                    </div>
+                  </div>
+                  <div onclick="window.toggleSourcesDrawer(true)" class="p-space-xs px-space-sm rounded-DEFAULT bg-surface-container-low hover:bg-surface-container transition flex items-center gap-space-xs cursor-pointer">
+                    <span class="material-symbols-outlined text-title-sm text-secondary">departure_board</span>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Central Terminal</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Gate 2B Sensor</span>
+                    </div>
+                  </div>
+                  <div onclick="window.sendFollowUpQuery('View full weekly transit fare table')" class="p-space-xs px-space-sm rounded-DEFAULT bg-surface-container-low hover:bg-surface-container transition flex items-center gap-space-xs cursor-pointer">
+                    <span class="material-symbols-outlined text-title-sm text-tertiary">payments</span>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Transit Fare DB</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Zone A Tariff</span>
+                    </div>
+                  </div>
+                  <div onclick="window.showToast('No incidents reported on Elevated Bypass Corridor')" class="p-space-xs px-space-sm rounded-DEFAULT bg-surface-container-low hover:bg-surface-container transition flex items-center gap-space-xs cursor-pointer">
+                    <span class="material-symbols-outlined text-title-sm text-primary">traffic</span>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Corridor Radar</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant truncate">No Incidents</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Synthesis Text -->
+              <div class="flex flex-col gap-space-xs text-on-surface leading-relaxed">
+                <p class="font-body-lg text-body-lg">
+                  The fastest commute right now is <strong class="text-primary font-title-sm">Route 104 Express</strong>, boarding from <strong class="text-on-surface font-title-sm">Platform 2B</strong> in exactly <strong class="text-primary font-title-sm">4 minutes</strong>.
+                </p>
+                <p class="font-body-md text-body-md text-on-surface-variant">
+                  Yes, this vehicle is confirmed to have active, temperature-regulated climate control (<span class="text-primary font-semibold">Dual AC</span>). By bypassing the surface road congestion via the newly integrated elevated transit bypass, it saves approximately 14 minutes compared to the Local 42 bus line.
+                </p>
+              </div>
+
+              <!-- Interactive Journey Telematics Card -->
+              <div class="rounded-lg bg-surface-container-low p-space-md flex flex-col gap-space-md shadow-sm border border-surface-container/60">
+                <!-- Card Header -->
+                <div class="flex flex-wrap items-center justify-between gap-space-xs">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm">
+                      <span class="material-symbols-outlined text-headline-sm">directions_bus</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <div class="flex items-center gap-space-xs">
+                        <span class="font-title-sm text-title-sm font-bold text-on-surface">104 Express</span>
+                        <span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm flex items-center gap-0.5">
+                          <span class="material-symbols-outlined text-label-sm">mode_fan</span> Climate AC
+                        </span>
+                      </div>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant">Fleet Unit #PK-889 • Safar Intercity Low-Floor</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded-full text-secondary font-label-sm text-label-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                    <span>On Time • Departs 10:52 AM</span>
+                  </div>
+                </div>
+
+                <!-- Wayfinding Timeline Diagram -->
+                <div class="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md py-space-sm px-space-xs">
+                  <div class="flex items-center gap-space-sm min-w-0">
+                    <div class="w-4 h-4 rounded-full bg-primary ring-4 ring-primary-fixed shrink-0"></div>
+                    <div class="flex flex-col">
+                      <span class="font-title-sm text-title-sm font-semibold text-on-surface">Central Station</span>
+                      <span class="font-label-sm text-label-sm text-primary font-bold">Platform 2B • 10:52 AM</span>
+                    </div>
+                  </div>
+
+                  <div class="flex-1 flex flex-col items-center px-space-sm w-full sm:w-auto">
+                    <div class="w-full flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm mb-1">
+                      <span>Via Elevated Flyover</span>
+                      <span class="font-semibold text-on-surface">26 min direct</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-surface-container-high relative overflow-hidden">
+                      <div class="h-full bg-primary rounded-full w-2/3 transition-all duration-1000"></div>
+                    </div>
+                    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm mt-1">
+                      <span>1 intermediate transfer stop</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-space-sm min-w-0">
+                    <div class="w-4 h-4 rounded-full bg-secondary ring-4 ring-secondary-fixed shrink-0"></div>
+                    <div class="flex flex-col">
+                      <span class="font-title-sm text-title-sm font-semibold text-on-surface">Innovation Tech Park</span>
+                      <span class="font-label-sm text-label-sm text-secondary font-bold">Main Gate Drop • 11:18 AM</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Trip Quick Specs Bento Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-xs pt-space-xs">
+                  <div class="p-space-sm rounded-DEFAULT bg-surface-container-lowest flex items-center justify-between shadow-xs border border-surface-container/40">
+                    <div class="flex items-center gap-space-xs">
+                      <span class="material-symbols-outlined text-primary text-title-sm">schedule</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant">Trip Duration</span>
+                    </div>
+                    <span class="font-title-sm text-title-sm text-on-surface font-semibold">26 Mins</span>
+                  </div>
+                  <div class="p-space-sm rounded-DEFAULT bg-surface-container-lowest flex items-center justify-between shadow-xs border border-surface-container/40">
+                    <div class="flex items-center gap-space-xs">
+                      <span class="material-symbols-outlined text-secondary text-title-sm">payments</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant">Tap-to-Pay</span>
+                    </div>
+                    <span class="font-title-sm text-title-sm text-on-surface font-semibold">$2.50</span>
+                  </div>
+                  <div class="p-space-sm rounded-DEFAULT bg-surface-container-lowest flex items-center justify-between shadow-xs border border-surface-container/40">
+                    <div class="flex items-center gap-space-xs">
+                      <span class="material-symbols-outlined text-tertiary text-title-sm">airline_seat_recline_normal</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant">Occupancy</span>
+                    </div>
+                    <span class="font-title-sm text-title-sm text-on-surface font-semibold">64% (Seats Avail)</span>
+                  </div>
+                </div>
+
+                <!-- Action CTA Group -->
+                <div class="flex flex-wrap items-center gap-space-xs pt-space-xs">
+                  <button onclick="window.toggleSplitMap(true)" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md transition shadow-[0_8px_16px_-4px_rgba(79,70,229,0.3)] active:scale-95" type="button">
+                    <span class="material-symbols-outlined text-title-sm">map</span>
+                    <span>Track Live on Map</span>
+                  </button>
+                  <button onclick="window.openScheduleModal()" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition active:scale-95" type="button">
+                    <span class="material-symbols-outlined text-title-sm">download</span>
+                    <span>Download Schedule</span>
+                  </button>
+                  <button onclick="window.openAlertModal()" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition active:scale-95" type="button">
+                    <span class="material-symbols-outlined text-title-sm">notifications_active</span>
+                    <span>Set Departure Alert</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Follow-Up Suggestions (Perplexity-Style Chips) -->
+              <div class="flex flex-col gap-space-xs pt-space-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
+                  Suggested Follow-ups
+                </span>
+                <div class="flex flex-wrap gap-space-xs">
+                  <button onclick="window.sendFollowUpQuery('What are the evening return trip timings?')" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-fixed text-primary hover:bg-primary hover:text-on-primary transition font-label-md text-label-md cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-label-sm">search</span>
+                    <span>What are the evening return trip timings?</span>
+                  </button>
+                  <button onclick="window.sendFollowUpQuery('Alternative Blue Metro Line connection')" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-fixed text-primary hover:bg-primary hover:text-on-primary transition font-label-md text-label-md cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-label-sm">search</span>
+                    <span>Alternative Blue Metro Line connection</span>
+                  </button>
+                  <button onclick="window.sendFollowUpQuery('View full weekly transit fare table')" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-fixed text-primary hover:bg-primary hover:text-on-primary transition font-label-md text-label-md cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-label-sm">search</span>
+                    <span>View full weekly transit fare table</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Split-Screen Live Transit Map Container (Right 7 Columns) -->
+        <div id="split-map-container" class="hidden w-full lg:w-7/12 h-full flex-col relative border-l border-surface-container bg-surface-container-low transition-all duration-300">
+          
+          <!-- Interactive Leaflet Canvas -->
+          <div id="leaflet-map" class="w-full h-full"></div>
+
+          <!-- Floating Glass Telematics Radar Card over Map -->
+          <div class="absolute top-4 left-4 right-4 z-[500] pointer-events-none">
+            <div class="pointer-events-auto bg-surface-container-lowest/90 backdrop-blur-xl rounded-lg p-space-sm shadow-safar-elevated border border-white/80 flex flex-wrap items-center justify-between gap-space-sm">
+              <div class="flex items-center gap-space-sm">
+                <div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center">
+                  <span class="material-symbols-outlined text-title-sm">sensors</span>
+                </div>
+                <div>
+                  <div class="font-title-sm text-title-sm font-bold text-on-surface">Route 104 Express Telematics</div>
+                  <div class="font-body-sm text-body-sm text-on-surface-variant">Fleet #PK-889 • GPS Sat-Link Active</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-space-md">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">Live Speed</span>
+                  <span id="map-live-speed" class="font-title-sm text-title-sm font-bold text-primary">48 km/h</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">Next Stop</span>
+                  <span id="map-live-next-stop" class="font-title-sm text-title-sm font-semibold text-on-surface">Metropolitan Flyover</span>
+                </div>
+                <button onclick="window.toggleSplitMap(false)" class="p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition" title="Close Split Map" type="button">
+                  <span class="material-symbols-outlined text-title-md">close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Map Status Pill -->
+          <div class="absolute bottom-4 left-4 z-[500] pointer-events-none">
+            <div class="pointer-events-auto bg-surface-container-lowest/90 backdrop-blur-md px-space-md py-1 rounded-full text-primary font-label-sm text-label-sm font-semibold shadow-md border border-white/80 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+              <span>104 Express Position Syncing every 3.5s</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Docked Perplexity-Style Interactive Input Bar -->
+      <div class="fixed bottom-6 left-0 lg:left-72 right-0 flex justify-center px-space-md lg:px-space-gutter pointer-events-none z-30">
+        <div class="w-full max-w-3xl pointer-events-auto bg-surface-container-lowest/95 backdrop-blur-2xl rounded-lg p-space-sm shadow-[0_12px_36px_rgba(79,70,229,0.12)] flex flex-col gap-space-xs border border-surface-container/60">
+          
+          <!-- Input Text Area -->
+          <div class="w-full px-space-xs pt-1">
+            <textarea id="prompt-input" class="w-full resize-none bg-transparent outline-none text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/60" placeholder="Ask a follow-up or plan a new transit route..." rows="2"></textarea>
+          </div>
+
+          <!-- Input Actions Toolbar -->
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center gap-space-xs">
+              <!-- Attach File / Location -->
+              <button onclick="window.showToast('Select transit stop, schedule PDF, or geotag')" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition" title="Add location or image" type="button">
+                <span class="material-symbols-outlined text-title-md">add</span>
+              </button>
+
+              <!-- Focus Dropdown -->
+              <button onclick="window.showToast('Focus mode: Transit AI (GTFS + Live Sensors)')" class="flex items-center gap-1 px-space-sm py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition" type="button">
+                <span class="material-symbols-outlined text-label-md text-primary">explore</span>
+                <span>Focus: Transit AI</span>
+                <span class="material-symbols-outlined text-label-sm">expand_more</span>
+              </button>
+
+              <!-- Model Switcher -->
+              <button onclick="window.showToast('Active Model: Safar 2.5 Pro (Multimodal Transit Graph)')" class="hidden sm:flex items-center gap-1 px-space-sm py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition" type="button">
+                <span class="material-symbols-outlined text-label-md text-secondary">psychology</span>
+                <span>Safar 2.5 Pro</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-space-xs">
+              <!-- Voice Input Trigger -->
+              <button id="mic-btn" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition" title="Voice Search" type="button">
+                <span class="material-symbols-outlined text-title-md">mic</span>
+              </button>
+
+              <!-- Send Pill Button -->
+              <button id="send-btn" class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center shadow-[0_4px_12px_rgba(79,70,229,0.35)] transition active:scale-90" title="Submit" type="button">
+                <span class="material-symbols-outlined text-title-sm">arrow_upward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Pill -->
+  <div id="safar-toast" class="fixed top-20 right-6 z-[999] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+    <div class="bg-inverse-surface text-inverse-on-surface px-space-md py-space-xs rounded-full shadow-lg font-label-sm text-label-sm flex items-center gap-space-xs border border-white/10">
+      <span class="material-symbols-outlined text-primary-fixed text-title-sm">info</span>
+      <span id="safar-toast-msg">Notification text</span>
+    </div>
+  </div>
+
+  <!-- Command Palette Modal (Ctrl+K / ⌘K) -->
+  <div id="cmd-palette-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="w-full max-w-xl bg-surface-container-lowest rounded-lg shadow-2xl border border-surface-container p-space-md flex flex-col gap-space-sm animate-fade-in">
+      <div class="flex items-center gap-space-sm pb-space-xs border-b border-surface-container">
+        <span class="material-symbols-outlined text-primary text-title-md">search</span>
+        <input id="cmd-palette-input" class="w-full bg-transparent outline-none font-title-sm text-title-sm text-on-surface placeholder:text-on-surface-variant/60" placeholder="Search routes, stations, timetables or ask AI..."/>
+        <kbd class="px-2 py-0.5 rounded bg-surface-container font-mono text-body-sm text-on-surface-variant">ESC</kbd>
+      </div>
+      <div class="flex flex-col gap-1 max-h-72 overflow-y-auto pt-2">
+        <button onclick="selectCmdAction('new-query')" class="flex items-center justify-between p-space-sm rounded-DEFAULT hover:bg-surface-container-low transition text-left">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-primary text-title-sm">add_circle</span>
+            <span class="font-label-md text-label-md text-on-surface">Start New Transit AI Inquiry</span>
+          </div>
+          <span class="text-on-surface-variant font-label-sm">Prompt</span>
+        </button>
+        <button onclick="selectCmdAction('track-104')" class="flex items-center justify-between p-space-sm rounded-DEFAULT hover:bg-surface-container-low transition text-left">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-secondary text-title-sm">sensors</span>
+            <span class="font-label-md text-label-md text-on-surface">Track Route 104 Express (PK-889)</span>
+          </div>
+          <span class="text-secondary font-label-sm font-semibold">Live Map</span>
+        </button>
+        <button onclick="selectCmdAction('metro-line')" class="flex items-center justify-between p-space-sm rounded-DEFAULT hover:bg-surface-container-low transition text-left">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-primary text-title-sm">train</span>
+            <span class="font-label-md text-label-md text-on-surface">Blue Metro Line Schedule</span>
+          </div>
+          <span class="text-on-surface-variant font-label-sm">Subway</span>
+        </button>
+        <button onclick="selectCmdAction('fare-table')" class="flex items-center justify-between p-space-sm rounded-DEFAULT hover:bg-surface-container-low transition text-left">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-tertiary text-title-sm">payments</span>
+            <span class="font-label-md text-label-md text-on-surface">View 2026 Transit Fare Matrix</span>
+          </div>
+          <span class="text-on-surface-variant font-label-sm">Tariff</span>
+        </button>
+        <button onclick="selectCmdAction('schedules')" class="flex items-center justify-between p-space-sm rounded-DEFAULT hover:bg-surface-container-low transition text-left">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-on-surface-variant text-title-sm">download</span>
+            <span class="font-label-md text-label-md text-on-surface">Download Printable Schedule PDF</span>
+          </div>
+          <span class="text-on-surface-variant font-label-sm">GTFS</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Listening Simulation Modal -->
+  <div id="voice-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/50 backdrop-blur-md p-4">
+    <div class="w-full max-w-sm bg-surface-container-lowest rounded-xl p-space-lg shadow-2xl border border-surface-container flex flex-col items-center text-center gap-space-md">
+      <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-8 ring-primary-fixed/50 animate-pulse">
+        <span class="material-symbols-outlined text-headline-lg">mic</span>
+      </div>
+      <div>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Listening to Transit Request...</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Speak station name, route, or ask about departures</p>
+      </div>
+      <!-- Waveform Bars -->
+      <div class="flex items-center justify-center gap-1.5 h-10">
+        <span class="w-1.5 bg-primary rounded-full voice-wave-bar" style="height: 12px;"></span>
+        <span class="w-1.5 bg-primary-container rounded-full voice-wave-bar" style="height: 24px;"></span>
+        <span class="w-1.5 bg-secondary rounded-full voice-wave-bar" style="height: 18px;"></span>
+        <span class="w-1.5 bg-primary rounded-full voice-wave-bar" style="height: 32px;"></span>
+        <span class="w-1.5 bg-secondary-container rounded-full voice-wave-bar" style="height: 14px;"></span>
+      </div>
+      <button onclick="window.stopVoiceRecording()" class="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition" type="button">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- Departure Alert Configuration Modal -->
+  <div id="alert-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md bg-surface-container-lowest rounded-lg p-space-lg shadow-2xl border border-surface-container flex flex-col gap-space-md">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-primary text-headline-sm">notifications_active</span>
+          <h3 class="font-title-md text-title-md font-bold text-on-surface">Set Departure Alert</h3>
+        </div>
+        <button onclick="window.closeAlertModal()" class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+          <span class="material-symbols-outlined text-title-md">close</span>
+        </button>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Receive an instant sound alert and banner notification when <strong>Route 104 Express</strong> approaches <strong>Platform 2B</strong>.
+      </p>
+      <div class="grid grid-cols-2 gap-space-xs">
+        <button onclick="confirmDepartureAlert('4 minutes')" class="p-space-sm rounded-DEFAULT border border-primary bg-primary-fixed text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition">
+          4 Mins Before (Boarding)
+        </button>
+        <button onclick="confirmDepartureAlert('10 minutes')" class="p-space-sm rounded-DEFAULT border border-surface-container hover:border-primary font-label-md text-label-md text-on-surface transition">
+          10 Mins Before
+        </button>
+      </div>
+      <div class="flex justify-end gap-space-xs pt-space-xs">
+        <button onclick="window.closeAlertModal()" class="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Schedule Modal -->
+  <div id="schedule-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="w-full max-w-2xl bg-surface-container-lowest rounded-lg p-space-lg shadow-2xl border border-surface-container flex flex-col gap-space-md max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-surface-container pb-space-sm">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-primary text-headline-sm">schedule</span>
+          <div>
+            <h3 class="font-title-md text-title-md font-bold text-on-surface">Route 104 Express - Official Timetable</h3>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Effective GTFS Cycle 2026.4 • Mon-Sun Service</span>
+          </div>
+        </div>
+        <button onclick="window.closeScheduleModal()" class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+          <span class="material-symbols-outlined text-title-md">close</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-space-sm">
+        <div class="p-space-sm rounded bg-surface-container-low text-body-sm text-on-surface flex items-center justify-between">
+          <span>Direction: <strong>Central Station ➔ Innovation Tech Park</strong></span>
+          <span class="text-primary font-bold">Peak Frequency: 15 mins</span>
+        </div>
+
+        <div class="border border-surface-container rounded-DEFAULT overflow-hidden">
+          <table class="w-full text-left font-body-sm">
+            <thead class="bg-surface-container font-label-sm text-label-sm text-on-surface">
+              <tr>
+                <th class="p-space-xs px-space-sm">Stop Name</th>
+                <th class="p-space-xs px-space-sm">Morning Peak</th>
+                <th class="p-space-xs px-space-sm">Mid-Day</th>
+                <th class="p-space-xs px-space-sm">Evening Peak</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-container-low">
+              <tr>
+                <td class="p-space-xs px-space-sm font-semibold">Central Station (Platform 2B)</td>
+                <td class="p-space-xs px-space-sm text-primary font-bold">10:52 AM</td>
+                <td class="p-space-xs px-space-sm">1:20 PM</td>
+                <td class="p-space-xs px-space-sm">5:15 PM</td>
+              </tr>
+              <tr>
+                <td class="p-space-xs px-space-sm font-semibold">Metropolitan Flyover Junction</td>
+                <td class="p-space-xs px-space-sm">11:04 AM</td>
+                <td class="p-space-xs px-space-sm">1:32 PM</td>
+                <td class="p-space-xs px-space-sm">5:28 PM</td>
+              </tr>
+              <tr>
+                <td class="p-space-xs px-space-sm font-semibold">Innovation Tech Park (Main Gate)</td>
+                <td class="p-space-xs px-space-sm text-secondary font-bold">11:18 AM</td>
+                <td class="p-space-xs px-space-sm">1:46 PM</td>
+                <td class="p-space-xs px-space-sm">5:43 PM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-space-xs pt-space-xs border-t border-surface-container">
+        <button onclick="window.print()" class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm">
+          <span class="material-symbols-outlined text-title-sm">print</span>
+          <span>Print / Save PDF</span>
+        </button>
+        <button onclick="window.closeScheduleModal()" class="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sources Drawer (8 Stations) -->
+  <aside id="sources-drawer" class="fixed top-0 right-0 h-full w-80 bg-surface-container-lowest shadow-2xl z-[800] transform translate-x-full transition-drawer p-space-md flex flex-col gap-space-md border-l border-surface-container">
+    <div class="flex items-center justify-between border-b border-surface-container pb-space-sm">
+      <div class="flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-primary text-headline-sm">lan</span>
+        <h3 class="font-title-md text-title-md font-bold text-on-surface">8 Verified Stations</h3>
+      </div>
+      <button onclick="window.toggleSourcesDrawer(false)" class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+        <span class="material-symbols-outlined text-title-md">close</span>
+      </button>
+    </div>
+    <div class="flex flex-col gap-space-xs overflow-y-auto flex-1 pr-1">
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Central Station</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Platforms 1-6 • Sensor Gate 2B Synced</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Flyover Junction</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Bays 1-2 • Rapid Transfer Point</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Innovation Tech Park</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Main Gate &amp; South Gate Drop</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Cyber Heights</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Blue Metro Underpass</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Old Port Terminal</span>
+          <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-label-sm text-label-sm">Slow</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Surface Traffic Congestion</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">University Campus</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Green Loop Connector</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">Civic Center Hub</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Multi-Level Concourse</span>
+      </div>
+      <div class="p-space-sm rounded-DEFAULT bg-surface-container-low flex flex-col gap-0.5">
+        <div class="flex items-center justify-between">
+          <span class="font-title-sm text-title-sm font-semibold text-on-surface">East Coast Ferry</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-label-sm text-label-sm">Active</span>
+        </div>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Harbor Shuttle Link</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Transit Data -->
+  <script src="transit-data.js"></script>
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
