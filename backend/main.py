@@ -25,6 +25,7 @@ from services.grok_client import (
     extract_transit_intent,
     generate_user_response,
     grok_configured,
+    provider_name,
     transcribe_audio,
 )
 
@@ -139,7 +140,7 @@ def run_chat_pipeline(message: str, lat: Optional[float] = None, lng: Optional[f
             "current_time": current_time,
         },
         "ai": {
-            "provider": "xai-grok",
+            "provider": provider_name(),
             "status": grok_status,
         },
     }

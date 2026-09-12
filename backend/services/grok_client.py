@@ -6,7 +6,10 @@ from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
 XAI_BASE_URL = "https://api.x.ai/v1"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 DEFAULT_MODEL = "grok-4-fast"
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+DEFAULT_GROQ_STT_MODEL = "whisper-large-v3"
 
 ALLOWED_PREFERENCES = {
     "lowest_fare",
@@ -74,7 +77,19 @@ INTENT_JSON_SCHEMA: Dict[str, Any] = {
 
 
 def get_api_key() -> Optional[str]:
-    return os.getenv("XAI_API_KEY")
+    return os.getenv("XAI_API_KEY") or os.getenv("GROQ_API_KEY")
+
+
+def _is_groq_key(key: str) -> bool:
+    return key.startswith(("gsk_", "gsk-"))
+
+
+def provider_name() -> str:
+    """Human-readable name of the active LLM provider (for the AI status payload)."""
+    key = get_api_key()
+    if not key or not key.strip():
+        return "none"
+    return "groq" if _is_groq_key(key.strip()) else "xai-grok"
 
 
 def grok_configured() -> bool:
@@ -86,10 +101,14 @@ def _client() -> OpenAI:
     key = get_api_key()
     if not key or not key.strip():
         raise GrokError("missing_api_key", "XAI_API_KEY is not configured")
-    return OpenAI(api_key=key.strip(), base_url=XAI_BASE_URL, timeout=30.0)
+    key = key.strip()
+    base_url = GROQ_BASE_URL if _is_groq_key(key) else XAI_BASE_URL
+    return OpenAI(api_key=key, base_url=base_url, timeout=30.0)
 
 
 def _model_name() -> str:
+    if provider_name() == "groq":
+        return os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
     return os.getenv("XAI_MODEL", DEFAULT_MODEL)
 
 
@@ -138,6 +157,40 @@ def extract_transit_intent(
     )
 
     client = _client()
+
+    # Groq: OpenAI-compatible chat completions with strict JSON mode.
+    if provider_name() == "groq":
+        try:
+            response = client.chat.completions.create(
+                model=_model_name(),
+                temperature=0,
+                response_format={"type": "json_object"},
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system
+                        + "\nRespond ONLY with a JSON object using exactly this schema:\n"
+                        + json.dumps(INTENT_JSON_SCHEMA),
+                    },
+                    {"role": "user", "content": user_payload + "\n\nJSON only."},
+                ],
+            )
+            raw = (response.choices[0].message.content or "").strip()
+            data = json.loads(raw)
+            return intent_to_dict(TransitIntent.model_validate(data))
+        except GrokError:
+            raise
+        except ValidationError as err:
+            raise GrokError(
+                "malformed_ai_output", "Grok intent failed schema validation"
+            ) from err
+        except Exception as err:
+            lowered = str(err).lower()
+            if "timeout" in lowered or "timed out" in lowered:
+                raise GrokError("timeout", "Grok intent extraction timed out") from err
+            raise GrokError("grok_api_failure", "Grok intent extraction failed") from err
+
+    # xAI: structured Responses API with a JSON-schema fallback.
     try:
         response = client.responses.parse(
             model=_model_name(),
@@ -215,6 +268,30 @@ def generate_user_response(
         f"Backend result JSON:\n{json.dumps(backend_result, ensure_ascii=False)}"
     )
     client = _client()
+
+    # Groq: OpenAI-compatible chat completions.
+    if provider_name() == "groq":
+        try:
+            response = client.chat.completions.create(
+                model=_model_name(),
+                temperature=0.3,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_payload},
+                ],
+            )
+            text = ((response.choices[0].message.content or "").strip())
+            if not text:
+                raise GrokError("malformed_ai_output", "Grok returned an empty response")
+            return text
+        except GrokError:
+            raise
+        except Exception as err:
+            lowered = str(err).lower()
+            code = "timeout" if "timeout" in lowered or "timed out" in lowered else "grok_api_failure"
+            raise GrokError(code, "Grok response generation failed") from err
+
+    # xAI: Responses API.
     try:
         response = client.responses.create(
             model=_model_name(),
@@ -237,10 +314,34 @@ def generate_user_response(
 
 
 def transcribe_audio(file_bytes: bytes, filename: str = "audio.webm") -> str:
-    """Transcribe audio with xAI speech-to-text. Does not use a local Whisper service."""
+    """Transcribe audio. Uses Groq Whisper for gsk_ keys, xAI STT for xai- keys."""
     key = get_api_key()
     if not key or not key.strip():
         raise GrokError("missing_api_key", "XAI_API_KEY is not configured")
+    key = key.strip()
+
+    if _is_groq_key(key):
+        try:
+            client = OpenAI(
+                api_key=key, base_url=GROQ_BASE_URL, timeout=45.0
+            )
+            model = os.getenv("GROQ_STT_MODEL", DEFAULT_GROQ_STT_MODEL)
+            transcript_obj = client.audio.transcriptions.create(
+                model=model,
+                file=(filename, file_bytes),
+            )
+            text = (getattr(transcript_obj, "text", "") or "").strip()
+            if not text:
+                raise GrokError(
+                    "malformed_ai_output", "No speech could be transcribed"
+                )
+            return text
+        except GrokError:
+            raise
+        except Exception as err:
+            lowered = str(err).lower()
+            code = "timeout" if "timeout" in lowered or "timed out" in lowered else "grok_api_failure"
+            raise GrokError(code, "Speech-to-text failed") from err
 
     import httpx
 
