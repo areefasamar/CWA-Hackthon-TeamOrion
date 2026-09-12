@@ -34,14 +34,12 @@ The authoritative Sheraz route data is [backend/data/sheraz.json](backend/data/s
 - [frontend/src/app/api/chat/route.ts](frontend/src/app/api/chat/route.ts): frontend fallback chat pipeline
 
 ## Request Flow
-
 1. The user enters text or records voice in the Next.js `ChatContainer`.
 2. Text requests are sent to `/api/chat`; voice recordings are sent to `/api/voice`.
 3. The Next.js API route calls the Supabase Edge Function when available, with a local Sheraz fallback.
 4. The transit pipeline resolves stops from `backend/data/sheraz.json`.
 5. The response returns the route, fare, ETA, journey steps, and commuter guidance.
 6. The frontend renders the response as a chat message and journey card.
-
 ## Run Locally
 
 Open two terminals.
