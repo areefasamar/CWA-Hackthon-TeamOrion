@@ -11,8 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-import httpx
-
 from services.transit_engine import SHERAZ_DATA, nearest_stop_from_gps, process_transit_query
 from services.telemetry import (
     get_telemetry,

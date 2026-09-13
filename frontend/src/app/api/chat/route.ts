@@ -7,33 +7,9 @@ import { NextResponse } from "next/server";
 import { JourneyCardData, ApiResponse } from "@/types/transit";
 
 const ALIAS_MAP: Record<string, string> = {
-  "airport": "Star Gate",
-  "jinnah": "Star Gate",
-  "star gate": "Star Gate",
-  "stargate": "Star Gate",
-  "drigh road": "Drigh Road Station",
-  "drig road": "Drigh Road Station",
-  "lal kothi": "Drigh Road Station",
-  "karsaz": "Karsaz",
-  "karsaz chowrangi": "Karsaz",
-  "stadium": "Karsaz",
-  "baloch colony": "Baloch Colony",
-  "nursery": "Nursery",
-  "pechs": "Nursery",
-  "ftc": "FTC",
-  "ftc building": "FTC",
-  "metropole": "Metropole Hotel",
-  "metropol": "Metropole Hotel",
-  "avari": "Metropole Hotel",
-  "saddar": "Metropole Hotel",
-  "arts council": "Arts Council",
-  "sindh assembly": "Arts Council",
   "tower": "Tower",
   "kharadar": "Tower",
   "merewether": "Tower",
-  "model colony": "Model Colony",
-  "malir halt": "Malir Halt",
-  // Sheraz Coach Landmarks
   "cp 6": "CP 06 Malir Cantt",
   "cp6": "CP 06 Malir Cantt",
   "malir cantt": "CP 06 Malir Cantt",
@@ -134,28 +110,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // Determine route: Sheraz Coach vs Route 1
-    const isSheraz = normalized.includes("sheraz") || 
-      ["safoora", "malir cantt", "cp 6", "cp6", "nipa", "ned", "ku", "dow", "ojha", "safari", "hassan square", "hawksbay"].some(k => normalized.includes(k));
-
-    let routeName = "Peoples Bus Service - Route 1 (EV-1)";
-    let routeId = "PBS-01";
-    let operator = "Peoples Bus Service";
-    let fleetType = "Electric AC";
-    let fare = "Rs. 50";
-
-    if (isSheraz) {
-      routeName = "Sheraz Coach";
-      routeId = "SHERAZ-01";
-      operator = "Sheraz Transport Co.";
-      fleetType = "Local Mini Bus / Non-AC";
-      fare = "Rs. 40 - 80 (Stage Fare)";
-      if (!origin) origin = "Safoora Chowrangi";
-      if (!destination) destination = "Tower";
-    } else {
-      if (!origin) origin = "Model Colony";
-      if (!destination) destination = origin === "Tower" ? "Model Colony" : "Tower";
-    }
+    const routeName = "Sheraz Coach";
+    const routeId = "SHERAZ-01";
+    const operator = "Sheraz Transport Co.";
+    const fleetType = "Local Mini Bus / Non-AC";
+    const fare = "Rs. 20 - 100 (Stage Fare)";
+    if (!origin) origin = "Safoora Chowrangi";
+    if (!destination) destination = "Tower";
 
     const summaryText = isRomanUrdu
       ? `Aap ${origin} se ${routeName} le sakte hain jo ${destination} tak jaati hai. Is safar ka kiraya ${fare} hai.`
@@ -183,7 +144,7 @@ export async function POST(req: Request) {
           step_number: 2,
           action: "TRANSIT",
           route_id: routeId,
-          stop_name: isSheraz ? "University Road Corridor" : "Sharea Faisal Corridor",
+          stop_name: "University Road Corridor",
           instructions: isRomanUrdu
             ? `Bus direct corridor se guzar kar agle stops cover karegi.`
             : `Travel along the main transit corridor.`
@@ -198,15 +159,10 @@ export async function POST(req: Request) {
             : `Alight from the bus at ${destination} stop.`
         }
       ],
-      commuter_tips: isSheraz
-        ? [
-            isRomanUrdu ? "Local coach hai, rush ke auqaat mein bheer zyada hoti hai." : "Local coach; expect crowds during peak commute hours.",
-            isRomanUrdu ? "Kiraya conductor ko cash mein ada karein." : "Keep exact cash change for the conductor."
-          ]
-        : [
-            isRomanUrdu ? "Electric AC bus hai, safar nihayat aaram-deh hai." : "Air-conditioned electric bus with smooth transit.",
-            isRomanUrdu ? "Official flat rate Rs. 50 hai, ticket zaroor haasil karein." : "Flat fare Rs. 50. Digital cards and cash accepted."
-          ],
+      commuter_tips: [
+        isRomanUrdu ? "Local coach hai, rush ke auqaat mein bheer zyada hoti hai." : "Local coach; expect crowds during peak commute hours.",
+        isRomanUrdu ? "Kiraya conductor ko cash mein ada karein." : "Keep exact cash change for the conductor."
+      ],
       summary_text: summaryText
     };
 
@@ -219,7 +175,7 @@ export async function POST(req: Request) {
           query_type: "route_and_fare"
         },
         matched_route: routeId,
-        fare_evaluated: isSheraz ? 60 : 50
+        fare_evaluated: 60
       },
       journey_card: journeyCard
     };

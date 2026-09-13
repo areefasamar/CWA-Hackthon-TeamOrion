@@ -22,7 +22,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Safar — Karachi Transit AI",
   description:
-    "AI-assisted urban transit companion for Karachi — live route guidance, fares and journey planning for Peoples Bus Service Route 1 & Sheraz Coach.",
+    "AI-assisted Sheraz Coach route guide for Karachi — live stops, fares and journey planning.",
 };
 
 export const viewport: Viewport = {
