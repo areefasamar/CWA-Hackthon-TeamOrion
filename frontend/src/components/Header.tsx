@@ -1,60 +1,39 @@
 "use client";
-
 import React from "react";
-import { Menu, ChevronRight, Zap, Map, Share, SlidersHorizontal, ChevronDown } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="top-header">
-      <div className="header-left">
-        {/* Mobile Menu Hamburger Trigger */}
-        <button id="mobile-menu-btn" className="mobile-menu-btn" type="button">
-          <Menu size={20} />
-        </button>
-
-        {/* Breadcrumbs */}
-        <div className="breadcrumbs">
-          <span className="breadcrumb-item hidden-sm hoverable" onClick={() => location.reload()}>Safar</span>
-          <ChevronRight size={14} className="hidden-sm" />
-          <span className="breadcrumb-item hoverable">Transit Workspace</span>
-          <ChevronRight size={14} />
-          <span className="breadcrumb-item active truncate-item">Route Intelligence</span>
+    <header className="stitch-header">
+      <div className="stitch-header-left">
+        <div className="stitch-breadcrumbs">
+          <span className="stitch-bc-item stitch-bc-hoverable">Safar</span>
+          <span className="material-symbols-outlined stitch-bc-chevron">chevron_right</span>
+          <span className="stitch-bc-item stitch-bc-hoverable">Transit Workspace</span>
+          <span className="material-symbols-outlined stitch-bc-chevron">chevron_right</span>
+          <span className="stitch-bc-item stitch-bc-active">Route Intelligence</span>
         </div>
-
-        {/* Safar AI Status Pill */}
-        <div className="safar-ai-status-pill hidden-sm">
-          <Zap size={14} className="status-icon" />
+        <div className="stitch-ai-pill">
+          <span className="material-symbols-outlined stitch-bolt-icon">bolt</span>
           <span>Safar AI 2.5 Transit</span>
         </div>
       </div>
 
-      {/* Right Header Actions */}
-      <div className="header-right">
-        {/* Split Map Dynamic Toggle */}
-        <button id="toggle-map-btn" className="header-action-btn" type="button" title="Toggle Live Transit Map Split Screen">
-          <Map size={16} />
-          <span className="btn-label hidden-sm">Split Map</span>
+      <div className="stitch-header-right">
+        <button className="stitch-hdr-btn" type="button">
+          <span className="material-symbols-outlined">ios_share</span>
+          <span className="stitch-hdr-btn-label">Share</span>
         </button>
-
-        {/* Share Trigger */}
-        <button className="header-action-btn" type="button" onClick={() => alert('Shareable route link copied to clipboard!')}>
-          <Share size={16} />
-          <span className="hidden-sm">Share</span>
+        <button className="stitch-hdr-icon-btn" type="button">
+          <span className="material-symbols-outlined">tune</span>
         </button>
-
-        {/* Tune Settings Button */}
-        <button className="header-icon-btn" title="Settings & Schedules" type="button">
-          <SlidersHorizontal size={16} />
-        </button>
-
-        <div className="header-divider"></div>
-
-        {/* Profile Dropdown */}
-        <div className="profile-dropdown" onClick={() => alert('Logged in as Traveler #8821')}>
-          <div className="profile-avatar">
-            <span className="material-symbols-outlined profile-icon">account_circle</span>
-          </div>
-          <ChevronDown size={14} className="dropdown-icon" />
+        <div className="stitch-hdr-divider"></div>
+        <div className="stitch-profile-area">
+          <img
+            alt="Profile"
+            className="stitch-profile-avatar"
+            src="https://lh3.googleusercontent.com/aida/AEtjO1UDhQQha1kvvMBG63vfg6poRS_LFYo1d1iLgYkW4S1kpM27V2BveLMg13d1-p9dDlspdtG41sEp5CcfBUR02Goxx9DZU-Uua-NKDKiHWC2VuPiE1oD2wedXgD0E4qwG4mMHiWMhot_U4N3R0kBIJKK_t658Wo-vFeb7brOsIcVUObDaBnaxwWJPg6Xk1X3_tz98yGPytqtXC9qsxreUFS7MP9ARTiRNWXtlq0sZ9KtPlSaWMoky584sK5NXDht7mwxu1u2ToE-tINY"
+          />
+          <span className="material-symbols-outlined stitch-expand-icon">expand_more</span>
         </div>
       </div>
     </header>

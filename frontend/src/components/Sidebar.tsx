@@ -1,96 +1,84 @@
 "use client";
-
 import React from "react";
-import { Search, Clock, ShieldCheck, Plus, Compass, Navigation, Bookmark, FolderOpen, History, Settings2, MoreHorizontal } from "lucide-react";
 
 export default function Sidebar() {
   return (
-    <aside className="safar-sidebar" id="safar-sidebar">
-      <div className="sidebar-content">
+    <aside className="stitch-sidebar">
+      <div className="stitch-sidebar-content">
         {/* Brand Header */}
-        <div className="sidebar-brand">
-          <div className="brand-logo-container">
-            <span className="material-symbols-outlined brand-logo-icon">directions_bus</span>
-          </div>
-          <div className="brand-text-col">
-            <div className="brand-title">Safar</div>
-            <span className="brand-subtitle">Transit AI Studio</span>
+        <div className="stitch-brand">
+          <img
+            alt="Safar Transit AI Logo"
+            className="stitch-brand-logo"
+            src="https://lh3.googleusercontent.com/aida/AEtjO1UDhQQha1kvvMBG63vfg6poRS_LFYo1d1iLgYkW4S1kpM27V2BveLMg13d1-p9dDlspdtG41sEp5CcfBUR02Goxx9DZU-Uua-NKDKiHWC2VuPiE1oD2wedXgD0E4qwG4mMHiWMhot_U4N3R0kBIJKK_t658Wo-vFeb7brOsIcVUObDaBnaxwWJPg6Xk1X3_tz98yGPytqtXC9qsxreUFS7MP9ARTiRNWXtlq0sZ9KtPlSaWMoky584sK5NXDht7mwxu1u2ToE-tINY"
+          />
+          <div className="stitch-brand-text">
+            <div className="stitch-brand-name">Safar</div>
+            <span className="stitch-brand-sub">Transit AI Studio</span>
           </div>
         </div>
 
-        {/* New Journey Action Button */}
-        <div className="new-journey-container">
-          <button id="new-journey-btn" className="new-journey-btn" type="button">
-            <div className="btn-inner">
-              <Plus size={16} />
-              <span className="btn-label">New Journey</span>
+        {/* New Journey Button */}
+        <div className="stitch-new-journey-wrap">
+          <button className="stitch-new-journey-btn" type="button">
+            <div className="stitch-njb-left">
+              <span className="material-symbols-outlined">add</span>
+              <span className="stitch-njb-label">New Journey</span>
             </div>
-            <span className="btn-shortcut">⌘K</span>
+            <span className="stitch-njb-kbd">⌘K</span>
           </button>
         </div>
 
-        {/* Navigation Section */}
-        <div className="nav-section-title">Navigation</div>
-        <nav className="sidebar-nav">
-          <a className="nav-link active" data-path="chat-workspace" href="#">
-            <Search size={18} />
-            <span>Search &amp; Explore</span>
+        {/* Navigation */}
+        <div className="stitch-nav-section-title">Navigation</div>
+        <nav className="stitch-nav">
+          <a aria-current="page" className="stitch-nav-link stitch-nav-link--active" href="#">
+            <span className="material-symbols-outlined">search</span>
+            Search &amp; Explore
           </a>
-          <a className="nav-link" data-path="transit-schedules" href="#">
-            <Clock size={18} />
-            <span>Transit Schedules</span>
+          <a className="stitch-nav-link" href="#">
+            <span className="material-symbols-outlined">schedule</span>
+            Transit Schedules
           </a>
-          <a className="nav-link" data-path="live-telematics" href="#">
-            <Navigation size={18} />
-            <span>Live Telematics</span>
+          <a className="stitch-nav-link" href="#">
+            <span className="material-symbols-outlined">sensors</span>
+            Live Telematics
           </a>
-          <a className="nav-link" data-path="saved-routes" href="#">
-            <Bookmark size={18} />
-            <span>Saved Routes</span>
+          <a className="stitch-nav-link" href="#">
+            <span className="material-symbols-outlined">bookmark_border</span>
+            Saved Routes
           </a>
-          <a className="nav-link" data-path="transit-library" href="#">
-            <FolderOpen size={18} />
-            <span>Transit Library</span>
+          <a className="stitch-nav-link" href="#">
+            <span className="material-symbols-outlined">folder_open</span>
+            Transit Library
           </a>
         </nav>
 
         {/* Recent Chats */}
-        <div className="recent-chats-header">
+        <div className="stitch-recent-header">
           <span>Recent Chats</span>
-          <History size={14} className="history-icon" title="Chat History" />
+          <span className="material-symbols-outlined stitch-history-icon">history</span>
         </div>
-        <div className="recent-chats-list">
-          <a className="recent-chat-item" href="#">
-            <Search size={14} className="recent-chat-icon" />
-            <span className="truncate">Bus timings to Downtown</span>
-          </a>
-          <a className="recent-chat-item" href="#">
-            <Search size={14} className="recent-chat-icon" />
-            <span className="truncate">Route 42 fare breakdown</span>
-          </a>
-          <a className="recent-chat-item" href="#">
-            <Search size={14} className="recent-chat-icon" />
-            <span className="truncate">Live location updates</span>
-          </a>
-          <a className="recent-chat-item" href="#">
-            <Search size={14} className="recent-chat-icon" />
-            <span className="truncate">Platform 4 express</span>
-          </a>
+        <div className="stitch-recent-list">
+          {["Bus timings to Downtown", "Route 42 fare breakdown", "Live location updates", "Platform 4 express"].map((chat) => (
+            <a key={chat} className="stitch-recent-item" href="#">
+              <span className="material-symbols-outlined stitch-recent-icon">chat_bubble_outline</span>
+              <span className="stitch-recent-text">{chat}</span>
+            </a>
+          ))}
         </div>
       </div>
 
-      {/* Engine Telemetry Status Badge */}
-      <div className="telemetry-badge-container">
-        <div className="telemetry-badge">
-          <div className="telemetry-badge-inner">
-            <ShieldCheck size={18} className="telemetry-icon" />
-            <div className="telemetry-text-col">
-              <span className="telemetry-title">Safar AI Engine</span>
-              <span className="telemetry-subtitle">v2.5 Multimodal</span>
-            </div>
+      {/* Engine Status */}
+      <div className="stitch-engine-badge">
+        <div className="stitch-engine-inner">
+          <span className="material-symbols-outlined stitch-engine-icon">smart_toy</span>
+          <div className="stitch-engine-text">
+            <span className="stitch-engine-name">Safar AI Engine</span>
+            <span className="stitch-engine-ver">v2.5 Multimodal</span>
           </div>
-          <span className="pulse-dot" title="Engine Operational"></span>
         </div>
+        <span className="stitch-engine-pulse"></span>
       </div>
     </aside>
   );
