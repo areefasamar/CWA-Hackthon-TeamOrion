@@ -131,9 +131,11 @@ body {
   cursor: pointer;
 }
 .stitch-brand-logo {
-  width: 36px; height: 36px;
+  width: 40px; height: 40px;
   border-radius: var(--r-full);
-  object-fit: cover;
+  background: #ffffff;
+  padding: 3px;
+  object-fit: contain;
   box-shadow: 0 4px 12px -2px rgba(79,70,229,0.25);
 }
 .stitch-brand-text { display: flex; flex-direction: column; }
@@ -1122,18 +1124,21 @@ body {
 /* LOGO SIZING (hero + header)                                       */
 /* ================================================================ */
 .stitch-hero-logo {
-  width: 72px;
-  height: 72px;
+  width: 84px;
+  height: 84px;
   max-width: 100%;
   object-fit: contain;
   display: block;
 }
 .stitch-header-logo {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-full);
+  background: #ffffff;
+  padding: 3px;
   object-fit: contain;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .stitch-header-left { gap: 10px; }
 .stitch-profile-avatar {

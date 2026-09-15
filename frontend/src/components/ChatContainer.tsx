@@ -210,7 +210,7 @@ export default function ChatContainer({
           <div className="relative mb-space-md stitch-hero-glow-group">
             <div className="stitch-hero-glow-ring"></div>
             <div className="stitch-hero-avatar">
-              <img alt="Safar Transit" className="stitch-hero-logo" src="/safar-logo.svg" />
+              <img alt="Safar Transit" className="stitch-hero-logo" src="/safar-logo.png" />
             </div>
             <span className="stitch-copilot-badge">Safar Transit Copilot</span>
           </div>

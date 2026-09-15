@@ -18,7 +18,7 @@ export default function Header() {
   return (
     <header className="stitch-header">
       <div className="stitch-header-left">
-        <img alt="Safar logo" className="stitch-header-logo" src="/safar-logo.svg" />
+        <img alt="Safar logo" className="stitch-header-logo" src="/safar-logo.png" />
         <div className="stitch-breadcrumbs">
           <span className="stitch-bc-item stitch-bc-active">Safar</span>
           <span className="material-symbols-outlined stitch-bc-chevron">chevron_right</span>

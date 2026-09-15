@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from services.transit_engine import SHERAZ_DATA, nearest_stop_from_gps, process_transit_query
+from services.transit_engine import ROUTES as SHERAZ_ROUTES, nearest_stop_from_gps, process_transit_query
 from services.telemetry import (
     get_telemetry,
     get_disruptions,
@@ -118,7 +118,7 @@ def run_chat_pipeline(message: str, lat: Optional[float] = None, lng: Optional[f
 
     backend_result = engine.get("result") or {}
     journey_card = engine.get("journey_card") or {}
-    user_facing = journey_card.get("summary_text") or ""
+    user_facing = engine.get("response") or journey_card.get("summary_text") or ""
 
     if intent and grok_configured():
         try:
@@ -214,13 +214,13 @@ def toggle_disruption_endpoint(req: DisruptionToggleRequest):
 @app.get("/api/routes")
 async def routes_endpoint():
     """
-    Returns the Sheraz route dataset used by the transit engine.
+    Returns all canonical route datasets used by the transit engine.
     """
     return {
         "connected": True,
-        "source": "backend/data/sheraz.json",
-        "routes_count": 1,
-        "routes": [SHERAZ_DATA],
+        "source": "backend/data/*.json",
+        "routes_count": len(SHERAZ_ROUTES),
+        "routes": SHERAZ_ROUTES,
     }
 
 if __name__ == "__main__":

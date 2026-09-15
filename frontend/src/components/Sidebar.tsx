@@ -26,7 +26,7 @@ export default function Sidebar({ onNewJourney, onNavSelect }: SidebarProps) {
           <img
             alt="Safar Transit AI Logo"
             className="stitch-brand-logo"
-            src="/safar-logo.svg"
+            src="/safar-logo.png"
           />
           <div className="stitch-brand-text">
             <div className="stitch-brand-name">Safar</div>
