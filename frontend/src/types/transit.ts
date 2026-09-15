@@ -11,7 +11,7 @@ export interface RouteStep {
 }
 
 export interface JourneyCardData {
-  status: "CONFIRMED" | "WARNING_REROUTED" | "NO_ROUTE_FOUND";
+  status: "CONFIRMED" | "WARNING_REROUTED" | "NO_ROUTE_FOUND" | "NEEDS_INPUT";
   primary_route_name: string;
   operator: string;
   fleet_type: string;
@@ -21,11 +21,25 @@ export interface JourneyCardData {
   steps: RouteStep[];
   commuter_tips: string[];
   summary_text: string;
-  // Phase 2 (live telemetry / disruption) fields — optional so Phase 1
-  // responses without them remain valid.
+  // Optional telemetry / meta fields
   estimated_wait_time_mins?: number;
   has_disruption?: boolean;
   disruption_warning?: string;
+  intermediate_stops?: number;
+}
+
+/**
+ * When the chatbot cannot resolve a stop, it asks back with tappable options.
+ * `field` says which endpoint the chips set; `other` is the already-known
+ * opposite endpoint (kept when the chip is clicked).
+ */
+export interface ClarifySuggestions {
+  field: "origin" | "destination";
+  message: string;
+  options: string[];
+  other?: string;
+  /** When true, chips complete a full "A to B" query using `other`. */
+  withOther?: boolean;
 }
 
 export interface ReasoningTrace {
@@ -41,23 +55,12 @@ export interface ReasoningTrace {
   fare_evaluated: number | null;
 }
 
-export interface TransitIntent {
-  origin: string | null;
-  destination: string | null;
-  fare_limit: number | null;
-  arrival_deadline: string | null;
-  departure_time: string | null;
-  preference: string;
-  language: string;
-}
-
 export interface ApiResponse {
   reasoning_trace?: ReasoningTrace;
-  journey_card: JourneyCardData;
-  intent?: TransitIntent | null;
-  result?: Record<string, unknown>;
-  response?: string;
-  transcript?: string;
+  journey_card?: JourneyCardData;
+  response: string;
+  clarify?: ClarifySuggestions | null;
+  follow_ups?: string[];
   error?: { code: string; message: string };
 }
 
@@ -67,4 +70,6 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   journeyCard?: JourneyCardData;
+  clarify?: ClarifySuggestions | null;
+  follow_ups?: string[];
 }

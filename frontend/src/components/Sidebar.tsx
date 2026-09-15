@@ -1,7 +1,23 @@
 "use client";
+
 import React from "react";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNewJourney?: () => void;
+}
+
+const NAV_ITEMS = [
+  { icon: "search", label: "Search & Explore", active: true },
+  { icon: "directions_transit", label: "Fare & Routes" },
+  { icon: "sensors", label: "Live Telematics" },
+];
+
+interface SidebarProps {
+  onNewJourney?: () => void;
+  onNavSelect?: (label: string) => void;
+}
+
+export default function Sidebar({ onNewJourney, onNavSelect }: SidebarProps) {
   return (
     <aside className="stitch-sidebar">
       <div className="stitch-sidebar-content">
@@ -10,7 +26,7 @@ export default function Sidebar() {
           <img
             alt="Safar Transit AI Logo"
             className="stitch-brand-logo"
-            src="https://lh3.googleusercontent.com/aida/AEtjO1UDhQQha1kvvMBG63vfg6poRS_LFYo1d1iLgYkW4S1kpM27V2BveLMg13d1-p9dDlspdtG41sEp5CcfBUR02Goxx9DZU-Uua-NKDKiHWC2VuPiE1oD2wedXgD0E4qwG4mMHiWMhot_U4N3R0kBIJKK_t658Wo-vFeb7brOsIcVUObDaBnaxwWJPg6Xk1X3_tz98yGPytqtXC9qsxreUFS7MP9ARTiRNWXtlq0sZ9KtPlSaWMoky584sK5NXDht7mwxu1u2ToE-tINY"
+            src="/safar-logo.svg"
           />
           <div className="stitch-brand-text">
             <div className="stitch-brand-name">Safar</div>
@@ -20,7 +36,7 @@ export default function Sidebar() {
 
         {/* New Journey Button */}
         <div className="stitch-new-journey-wrap">
-          <button className="stitch-new-journey-btn" type="button">
+          <button className="stitch-new-journey-btn" type="button" onClick={onNewJourney}>
             <div className="stitch-njb-left">
               <span className="material-symbols-outlined">add</span>
               <span className="stitch-njb-label">New Journey</span>
@@ -32,39 +48,35 @@ export default function Sidebar() {
         {/* Navigation */}
         <div className="stitch-nav-section-title">Navigation</div>
         <nav className="stitch-nav">
-          <a aria-current="page" className="stitch-nav-link stitch-nav-link--active" href="#">
-            <span className="material-symbols-outlined">search</span>
-            Search &amp; Explore
-          </a>
-          <a className="stitch-nav-link" href="#">
-            <span className="material-symbols-outlined">schedule</span>
-            Transit Schedules
-          </a>
-          <a className="stitch-nav-link" href="#">
-            <span className="material-symbols-outlined">sensors</span>
-            Live Telematics
-          </a>
-          <a className="stitch-nav-link" href="#">
-            <span className="material-symbols-outlined">bookmark_border</span>
-            Saved Routes
-          </a>
-          <a className="stitch-nav-link" href="#">
-            <span className="material-symbols-outlined">folder_open</span>
-            Transit Library
-          </a>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className={`stitch-nav-link ${item.active ? "stitch-nav-link--active" : ""}`}
+              onClick={() => onNavSelect?.(item.label)}
+            >
+              <span className="material-symbols-outlined">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
         </nav>
 
-        {/* Recent Chats */}
+        {/* Recent Chats — static mock history (non-interactive by design) */}
         <div className="stitch-recent-header">
           <span>Recent Chats</span>
           <span className="material-symbols-outlined stitch-history-icon">history</span>
         </div>
         <div className="stitch-recent-list">
-          {["Bus timings to Downtown", "Route 42 fare breakdown", "Live location updates", "Platform 4 express"].map((chat) => (
-            <a key={chat} className="stitch-recent-item" href="#">
+          {[
+            "CP 6 to Dolmen Mall",
+            "Safoora to Tower fare",
+            "EV-1 stop list",
+            "Sheraz timings",
+          ].map((chat) => (
+            <span key={chat} className="stitch-recent-item">
               <span className="material-symbols-outlined stitch-recent-icon">chat_bubble_outline</span>
               <span className="stitch-recent-text">{chat}</span>
-            </a>
+            </span>
           ))}
         </div>
       </div>
@@ -74,8 +86,8 @@ export default function Sidebar() {
         <div className="stitch-engine-inner">
           <span className="material-symbols-outlined stitch-engine-icon">smart_toy</span>
           <div className="stitch-engine-text">
-            <span className="stitch-engine-name">Safar AI Engine</span>
-            <span className="stitch-engine-ver">v2.5 Multimodal</span>
+            <span className="stitch-engine-name">Safar Engine</span>
+            <span className="stitch-engine-ver">Local mock · 2 routes</span>
           </div>
         </div>
         <span className="stitch-engine-pulse"></span>

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
-import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import "./globals.css";
 
@@ -43,7 +42,6 @@ export default function RootLayout({
       </head>
       <body>
         <div className="stitch-app-shell">
-          <Sidebar />
           <div className="stitch-main-wrapper">
             <Header />
             {children}

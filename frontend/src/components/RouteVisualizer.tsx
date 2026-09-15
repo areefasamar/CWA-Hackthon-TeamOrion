@@ -1,91 +1,87 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ROUTES, type RouteRecord, type CanonicalStop } from "@/lib/transitData";
 
-const SHERAZ_STOPS = [
-  { id: "SHZ-STP-01", name: "CP 06 Malir Cantt",         landmark: "Terminal Origin" },
-  { id: "SHZ-STP-02", name: "Safoora Chowrangi",          landmark: "Safoora Goth" },
-  { id: "SHZ-STP-03", name: "Bin Hashim / NADRA Office",  landmark: "Safoora" },
-  { id: "SHZ-STP-04", name: "Mausamiyat",                 landmark: "Mausamiyat Chowrangi" },
-  { id: "SHZ-STP-05", name: "Dow / Ojha Campus",          landmark: "Ojha Hospital" },
-  { id: "SHZ-STP-06", name: "KU Main Gate",               landmark: "Karachi University" },
-  { id: "SHZ-STP-07", name: "NED University",             landmark: "NED Main Gate" },
-  { id: "SHZ-STP-08", name: "Safari Park",                landmark: "University Road Safari" },
-  { id: "SHZ-STP-09", name: "NIPA Chowrangi",             landmark: "Gulshan Block 6" },
-  { id: "SHZ-STP-10", name: "Urdu Science College",       landmark: "Federal Urdu University" },
-  { id: "SHZ-STP-11", name: "Hassan Square",              landmark: "Expo Centre Karachi" },
-  { id: "SHZ-STP-12", name: "Sabzi Mandi / Askari Park",  landmark: "Kashmir Road Extension" },
-  { id: "SHZ-STP-13", name: "Jail Chowrangi",             landmark: "Jail Road" },
-  { id: "SHZ-STP-14", name: "Mazar-e-Quaid",              landmark: "Quaid Tomb" },
-  { id: "SHZ-STP-15", name: "Old Numaish",                landmark: "Numaish Chowrangi" },
-  { id: "SHZ-STP-16", name: "Plaza / MA Jinnah Road",     landmark: "Plaza Cinema" },
-  { id: "SHZ-STP-17", name: "Jama Cloth Market",          landmark: "Lighthouse Market" },
-  { id: "SHZ-STP-18", name: "Denso Hall",                 landmark: "MA Jinnah Wholesale Market" },
-  { id: "SHZ-STP-19", name: "Boulton Market",             landmark: "Kharadar Entrance" },
-  { id: "SHZ-STP-20", name: "Tower",                      landmark: "Merewether Tower" },
-  { id: "SHZ-STP-21", name: "Jamat Khana",               landmark: "Aga Khan Road" },
-  { id: "SHZ-STP-22", name: "G. Allana Road",             landmark: "Machli Miyani" },
-  { id: "SHZ-STP-23", name: "Gulbai",                     landmark: "Gulbai Chowrangi" },
-  { id: "SHZ-STP-24", name: "Hawksbay",                   landmark: "Terminal Destination" },
-];
+interface TelemetryState {
+  idx: number;
+  dir: 1 | -1;
+  speed: number;
+}
 
-const BUS_ID = "SHZ-01";
-const TICK_MS = 4500;
-
-interface TelemetryState { idx: number; dir: 1 | -1; speed: number; }
-interface RouteVisualizerProps { onCloseMap?: () => void; }
+interface RouteVisualizerProps {
+  onCloseMap?: () => void;
+}
 
 export default function RouteVisualizer({ onCloseMap }: RouteVisualizerProps) {
+  const [routeIdx, setRouteIdx] = useState(0);
   const [telemetry, setTelemetry] = useState<TelemetryState>({ idx: 5, dir: 1, speed: 28 });
   const [activeStop, setActiveStop] = useState<string | null>(null);
+
+  const route: RouteRecord = ROUTES[routeIdx] ?? ROUTES[0];
+  const stops: CanonicalStop[] = route.canonical_stops;
+
+  // Reset tracker when switching routes
+  useEffect(() => {
+    setTelemetry({ idx: Math.min(5, stops.length - 1), dir: 1, speed: 28 });
+    setActiveStop(null);
+  }, [routeIdx, stops.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTelemetry((prev) => {
         let dir = prev.dir;
         let next = prev.idx + dir;
-        if (next > SHERAZ_STOPS.length - 1 || next < 0) {
+        if (next > stops.length - 1 || next < 0) {
           dir = (dir * -1) as 1 | -1;
           next = prev.idx + dir;
         }
         return { idx: next, dir, speed: 26 + Math.round(Math.random() * 24) };
       });
-    }, TICK_MS);
+    }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [stops.length]);
 
-  const n = SHERAZ_STOPS.length;
+  const n = stops.length;
   const { idx, dir, speed } = telemetry;
-  const currentStop = SHERAZ_STOPS[idx];
-  const nextStop = SHERAZ_STOPS[idx + dir] ?? currentStop;
-  const heading = dir === 1 ? "Westbound → Hawksbay" : "Eastbound → CP 06";
+  const currentStop = stops[idx] ?? stops[0];
+  const nextStop = stops[idx + dir] ?? currentStop;
+  const heading =
+    dir === 1
+      ? `${route.canonical_stops[n - 1].official_name} bound`
+      : `${route.canonical_stops[0].official_name} bound`;
   const etaNext = Math.max(1, Math.round(120 / speed));
   const stopsToEnd = dir === 1 ? n - 1 - idx : idx;
   const etaTerminus = stopsToEnd * etaNext;
   const progress = Math.round((idx / (n - 1)) * 100);
 
-  // vertical track geometry
   const firstPct = (0.5 / n) * 100;
-  const busPct   = ((idx + 0.5) / n) * 100;
+  const busPct = ((idx + 0.5) / n) * 100;
 
-  const toggleStop = (id: string) =>
-    setActiveStop((prev) => (prev === id ? null : id));
-
+  const toggleStop = (id: string) => setActiveStop((prev) => (prev === id ? null : id));
   const stopEta = (i: number) => Math.max(1, Math.abs(i - idx) * etaNext);
 
-  return (
-    <section className="rv-stage" aria-label="Live Sheraz Coach corridor">
+  const fareLine = useMemo(() => {
+    if (route.fare_policy.type === "STAGE_BASED") {
+      return `Rs. ${route.fare_policy.minimum_fare}–${route.fare_policy.maximum_fare}`;
+    }
+    return `Rs. ${route.fare_policy.short_distance_fare}/${route.fare_policy.long_distance_fare} (zone)`;
+  }, [route]);
 
+  return (
+    <section className="rv-stage" aria-label={`Live ${route.route_name} corridor`}>
       {/* ── Header ── */}
       <div className="rv-hero">
         <div className="rv-hero-top">
           <div>
             <span className="rv-eyebrow">
               <span className="material-symbols-outlined rv-radio-icon">sensors</span>
-              Live Corridor · University Road to Hawksbay
+              Live Corridor · {route.bus_type}
             </span>
-            <h2 className="rv-title">Sheraz Coach</h2>
-            <p className="rv-desc">CP 06 Malir Cantt ⇄ Hawksbay · 24 stops</p>
+            <h2 className="rv-title">{route.route_name}</h2>
+            <p className="rv-desc">
+              {stops[0].official_name} ⇄ {stops[n - 1].official_name} · {n} stops
+            </p>
           </div>
           <div className="rv-hero-right">
             <span className="rv-live-pill">
@@ -93,37 +89,49 @@ export default function RouteVisualizer({ onCloseMap }: RouteVisualizerProps) {
               LIVE
             </span>
             {onCloseMap && (
-              <button onClick={onCloseMap} className="rv-close-btn" title="Close map">
+              <button onClick={onCloseMap} className="rv-close-btn" title="Close map" type="button">
                 <span className="material-symbols-outlined">close</span>
               </button>
             )}
           </div>
         </div>
 
+        {/* Route switcher */}
+        <div className="rv-route-switcher">
+          {ROUTES.map((r, i) => (
+            <button
+              key={r.route_id}
+              type="button"
+              className={`rv-switch-btn ${i === routeIdx ? "active" : ""}`}
+              onClick={() => setRouteIdx(i)}
+            >
+              {r.route_name}
+            </button>
+          ))}
+        </div>
+
         {/* Telemetry chips */}
         <div className="rv-chips">
           <span className="rv-chip rv-chip--accent">
             <span className="material-symbols-outlined">directions_bus</span>
-            {BUS_ID} · Non-AC Coach
+            {route.ac_available ? "AC" : "Non-AC"} · {route.operator}
           </span>
           <span className="rv-chip">
             <span className="material-symbols-outlined">navigation</span>
-            {currentStop.name} → {nextStop.name}
+            {currentStop.official_name} → {nextStop.official_name}
           </span>
           <span className="rv-chip">
             <span className="material-symbols-outlined">speed</span>
             {speed} km/h
           </span>
           <span className="rv-chip">
-            <span className="material-symbols-outlined">schedule</span>
-            ~{etaNext} min · {heading}
+            <span className="material-symbols-outlined">schedule</span>~{etaNext} min · {heading}
           </span>
         </div>
       </div>
 
       {/* ── Corridor board ── */}
       <div className="rv-board">
-        {/* progress header */}
         <div className="rv-board-head">
           <span className="rv-board-label">Stop-by-stop tracker</span>
           <div className="rv-progress-meta">
@@ -134,64 +142,73 @@ export default function RouteVisualizer({ onCloseMap }: RouteVisualizerProps) {
           </div>
         </div>
 
-        {/* vertical track */}
         <div className="rv-track-wrap">
           <div className="rv-track-rows">
-            {/* static rail */}
             <span className="rv-rail" aria-hidden="true" />
-            {/* filled portion */}
             <span
               className="rv-rail-fill"
               aria-hidden="true"
               style={{ top: `${firstPct}%`, height: `${Math.max(0, busPct - firstPct)}%` }}
             />
-            {/* bus dot */}
             <span className="rv-bus-dot" style={{ top: `${busPct}%` }} aria-hidden="true">
               <span className="material-symbols-outlined rv-bus-icon">directions_bus</span>
             </span>
 
-            {SHERAZ_STOPS.map((stop, i) => {
+            {stops.map((stop, i) => {
               const isTerminal = i === 0 || i === n - 1;
-              const isBehind   = dir === 1 ? i < idx : i > idx;
-              const isCurrent  = i === idx;
-              const isActive   = activeStop === stop.id;
+              const isBehind = dir === 1 ? i < idx : i > idx;
+              const isCurrent = i === idx;
+              const isActive = activeStop === stop.stop_id;
 
               return (
                 <div
-                  key={stop.id}
+                  key={stop.stop_id}
                   className={[
                     "rv-row",
-                    isCurrent  ? "rv-row--current"  : "",
-                    isBehind   ? "rv-row--visited"  : "",
-                    isActive   ? "rv-row--active"   : "",
+                    isCurrent ? "rv-row--current" : "",
+                    isBehind ? "rv-row--visited" : "",
+                    isActive ? "rv-row--active" : "",
                     isTerminal ? "rv-row--terminal" : "",
-                  ].filter(Boolean).join(" ")}
-                  onClick={() => toggleStop(stop.id)}
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => toggleStop(stop.stop_id)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleStop(stop.id); }
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleStop(stop.stop_id);
+                    }
                   }}
                   aria-pressed={isActive}
                 >
                   <div className="rv-node">
-                    {isTerminal
-                      ? <span className="material-symbols-outlined" style={{ fontSize: 12 }}>directions_bus</span>
-                      : i + 1}
+                    {isTerminal ? (
+                      <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
+                        directions_bus
+                      </span>
+                    ) : (
+                      stop.sequence
+                    )}
                   </div>
                   <div className="rv-stop-info">
                     <div className="rv-stop-name">
-                      <span>{stop.name}</span>
+                      <span>{stop.official_name}</span>
                       {isTerminal && <span className="rv-terminal-badge">Terminal</span>}
-                      {isCurrent  && <span className="rv-current-badge">● Now</span>}
+                      {isCurrent && <span className="rv-current-badge">● Now</span>}
                     </div>
                     {isActive && !isCurrent ? (
                       <span className="rv-eta-chip">
-                        <span className="material-symbols-outlined" style={{ fontSize: 10 }}>schedule</span>
-                        {BUS_ID} · ~{stopEta(i)} min
+                        <span className="material-symbols-outlined" style={{ fontSize: 10 }}>
+                          schedule
+                        </span>
+                        ~{stopEta(i)} min away
                       </span>
                     ) : (
-                      <span className="rv-landmark">{stop.landmark}</span>
+                      <span className="rv-landmark">
+                        {(stop.sub_landmarks && stop.sub_landmarks[0]) || ""}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -205,12 +222,14 @@ export default function RouteVisualizer({ onCloseMap }: RouteVisualizerProps) {
       <div className="rv-footer">
         <div className="rv-stats">
           <div className="rv-stat">
-            <span className="rv-stat-label">Official Fare</span>
-            <span className="rv-stat-value">Rs. 20–100</span>
+            <span className="rv-stat-label">Fare</span>
+            <span className="rv-stat-value">{fareLine}</span>
           </div>
           <div className="rv-stat">
-            <span className="rv-stat-label">Fleet</span>
-            <span className="rv-stat-value">Mini Bus · Non-AC</span>
+            <span className="rv-stat-label">Hours</span>
+            <span className="rv-stat-value">
+              {route.operating_hours.start}–{route.operating_hours.end}
+            </span>
           </div>
           <div className="rv-stat">
             <span className="rv-stat-label">Terminus ETA</span>
@@ -219,7 +238,7 @@ export default function RouteVisualizer({ onCloseMap }: RouteVisualizerProps) {
         </div>
         <span className="rv-verified">
           <span className="material-symbols-outlined rv-shield-icon">verified_user</span>
-          Verified · Sindh Mass Transit Authority
+          Mock telemetry · {route.operator}
         </span>
       </div>
     </section>
